@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Bindings Test</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>QR Code Bindings Test</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="qrContent" class="form-label">Test Content:</label>
+                            <textarea class="form-control" id="qrContent" rows="3">https://www.example.com</textarea>
+                        </div>
+                        <button class="btn btn-primary" id="generateBtn">Generate QR (Test)</button>
+                        <button class="btn btn-success" id="checkBindings">Check Bindings</button>
+                        <div class="mt-3" id="result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generateBtn');
+            const checkBindingsBtn = document.getElementById('checkBindings');
+            const qrContent = document.getElementById('qrContent');
+            const resultDiv = document.getElementById('result');
+            
+            console.log('DOM Content Loaded');
+            console.log('Generate button found:', !!generateBtn);
+            console.log('QR Content found:', !!qrContent);
+            console.log('QRCode library found:', typeof QRCode !== 'undefined');
+            console.log('QRErrorCorrectLevel found:', typeof QRErrorCorrectLevel !== 'undefined');
+            
+            // Test button binding
+            if(generateBtn) {
+                console.log('Adding event listener to generate button...');
+                generateBtn.addEventListener('click', function() {
+                    console.log('Generate button clicked!');
+                    resultDiv.innerHTML = '<div class="alert alert-success">Button click event fired!</div>';
+                    
+                    if(typeof QRCode !== 'undefined' && qrContent.value.trim()) {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 200;
+                            canvas.height = 200;
+                            resultDiv.appendChild(canvas);
+                            
+                            const qr = new QRCode(canvas, {
+                                text: qrContent.value,
+                                width: 200,
+                                height: 200,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff",
+                                correctLevel: QRErrorCorrectLevel.H
+                            });
+                            
+                            resultDiv.innerHTML += '<div class="alert alert-info">QR Code generated successfully!</div>';
+                        } catch(e) {
+                            resultDiv.innerHTML += '<div class="alert alert-danger">QR Error: ' + e.message + '</div>';
+                            console.error('QR Generation Error:', e);
+                        }
+                    } else {
+                        resultDiv.innerHTML += '<div class="alert alert-warning">QRCode library not available or no content</div>';
+                    }
+                });
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Generate button not found!</div>';
+            }
+            
+            checkBindingsBtn.addEventListener('click', function() {
+                const elementsStatus = {
+                    'qrContent': !!document.getElementById('qrContent'),
+                    'generateBtn': !!document.getElementById('generateBtn'),
+                    'downloadBtn': !!document.getElementById('downloadBtn'), // This will be null since it doesn't exist
+                    'qrPreview': !!document.getElementById('qrPreview'), // This will be null since it doesn't exist
+                    'QRCodeLib': typeof QRCode !== 'undefined',
+                    'QRErrorCorrectLevel': typeof QRErrorCorrectLevel !== 'undefined'
+                };
+                
+                let statusHTML = '<div class="alert alert-info"><h5>Element Status:</h5><ul>';
+                for(const [key, value] of Object.entries(elementsStatus)) {
+                    statusHTML += `<li>${key}: ${value ? '✓ FOUND' : '✗ NOT FOUND'}</li>`;
+                }
+                statusHTML += '</ul></div>';
+                
+                resultDiv.innerHTML = statusHTML;
+            });
+        });
+    </script>
+</body>
+</html>

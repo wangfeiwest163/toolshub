@@ -1,0 +1,388 @@
+/* Tool Page Specific Styles */
+
+/* Tool header styles */
+.tool-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tool-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.tool-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 50%;
+}
+
+.tool-details h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: var(--text-color);
+}
+
+.tool-category {
+    display: inline-block;
+    background-color: rgba(0, 123, 255, 0.1);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.favorite-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.favorite-btn:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-color: var(--primary-color);
+}
+
+.favorite-btn.favorited {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Tool content layout */
+.tool-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 992px) {
+    .tool-content {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+/* Tool interface section */
+.tool-interface {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tool-description {
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+}
+
+.tool-controls {
+    margin-bottom: 1.5rem;
+}
+
+.tool-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.tool-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    white-space: nowrap;
+}
+
+/* Results section */
+.results-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.results-output {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    min-height: 100px;
+    margin-top: 1rem;
+}
+
+.success-message {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.error-message {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+.warning-message {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.info-message {
+    color: var(--info-color);
+    font-weight: 500;
+}
+
+/* Usage tips section */
+.usage-tips {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.usage-tips ul {
+    padding-left: 1.25rem;
+    margin-bottom: 0;
+}
+
+.usage-tips li {
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+/* Loading indicator */
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 0.25rem solid rgba(0, 123, 255, 0.2);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Tool footer */
+.tool-footer {
+    margin-top: 3rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    color: var(--text-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .tool-info {
+        justify-content: center;
+    }
+    
+    .tool-actions {
+        flex-direction: column;
+    }
+    
+    .tool-actions .btn {
+        width: 100%;
+    }
+    
+    .tool-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .tool-header {
+        padding: 1rem 0;
+    }
+    
+    .tool-icon {
+        font-size: 2rem;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .tool-details h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Accessibility improvements */
+.screen-reader-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus management */
+.focus-within {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Animation for tool interactions */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Card-like elements in tools */
+.tool-card-light {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s;
+}
+
+.tool-card-light:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Custom form elements for tools */
+.tool-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.tool-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.tool-form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.tool-form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    outline: 0;
+}
+
+/* Utility classes for tools */
+.mt-4-important {
+    margin-top: 1.5rem !important;
+}
+
+.mb-4-important {
+    margin-bottom: 1.5rem !important;
+}
+
+.p-3-important {
+    padding: 1rem !important;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+/* Dark mode specific adjustments for tool pages */
+[data-theme="dark"] .tool-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .tool-interface,
+[data-theme="dark"] .results-output,
+[data-theme="dark"] .usage-tips,
+[data-theme="dark"] .tool-card-light {
+    border: 1px solid var(--border-color);
+}

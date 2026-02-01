@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Editor - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        #editor-container {
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        #editor {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .toolbar {
+            margin-bottom: 10px;
+        }
+        
+        .toolbar button {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .stats-bar {
+            background-color: #f8f9fa;
+            padding: 8px 15px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .word-count, .char-count {
+            display: inline-block;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body data-tool-id="6" data-tool-name="text-editor">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Text Editor</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Text Editor</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">A feature-rich text editor for all your writing needs.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="toolbar">
+                                <button class="btn btn-sm btn-outline-secondary" id="boldBtn" title="Bold">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="italicBtn" title="Italic">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="underlineBtn" title="Underline">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="clearBtn" title="Clear Formatting">
+                                    <i class="fas fa-remove-format"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="selectAllBtn" title="Select All">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="undoBtn" title="Undo">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="redoBtn" title="Redo">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                
+                                <div class="btn-group ms-3">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Font Size
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-size="1">Small</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="3">Normal</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="5">Large</a></li>
+                                        <li><a class="dropdown-item" href="#" data-size="7">Extra Large</a></li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="btn-group ms-1">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Align
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" data-align="left"><i class="fas fa-align-left"></i> Left</a></li>
+                                        <li><a class="dropdown-item" href="#" data-align="center"><i class="fas fa-align-center"></i> Center</a></li>
+                                        <li><a class="dropdown-item" href="#" data-align="right"><i class="fas fa-align-right"></i> Right</a></li>
+                                        <li><a class="dropdown-item" href="#" data-align="justify"><i class="fas fa-align-justify"></i> Justify</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div id="editor-container">
+                                <textarea id="editor" placeholder="Start typing here..."></textarea>
+                                <div class="stats-bar">
+                                    <div class="word-count">Words: <span id="wordCount">0</span></div>
+                                    <div class="char-count">Characters: <span id="charCount">0</span></div>
+                                    <div class="char-count">Characters (no spaces): <span id="charCountNoSpace">0</span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-primary" id="saveBtn">
+                                    <i class="fas fa-save"></i> Save Document
+                                </button>
+                                <button class="btn btn-success" id="loadBtn">
+                                    <i class="fas fa-folder-open"></i> Load Document
+                                </button>
+                                <button class="btn btn-info" id="exportBtn">
+                                    <i class="fas fa-file-export"></i> Export as Text
+                                </button>
+                                <button class="btn btn-warning" id="clearEditorBtn">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>Keyboard Shortcuts</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><kbd>Ctrl + B</kbd> - Bold</li>
+                                    <li><kbd>Ctrl + I</kbd> - Italic</li>
+                                    <li><kbd>Ctrl + U</kbd> - Underline</li>
+                                    <li><kbd>Ctrl + Z</kbd> - Undo</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><kbd>Ctrl + Y</kbd> - Redo</li>
+                                    <li><kbd>Ctrl + A</kbd> - Select All</li>
+                                    <li><kbd>Ctrl + S</kbd> - Save Document</li>
+                                    <li><kbd>Ctrl + O</kbd> - Load Document</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Document Stats</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-font text-primary me-2"></i> Words: <span id="sidebarWordCount">0</span></li>
+                            <li><i class="fas fa-keyboard text-success me-2"></i> Characters: <span id="sidebarCharCount">0</span></li>
+                            <li><i class="fas fa-keyboard text-info me-2"></i> Lines: <span id="lineCount">0</span></li>
+                            <li><i class="fas fa-ruler-vertical text-warning me-2"></i> Reading Time: <span id="readingTime">0 min</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Recent Documents</h5>
+                    </div>
+                    <div class="list-group list-group-flush" id="recentDocsList">
+                        <div class="list-group-item">No recent documents</div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/notes" class="list-group-item list-group-item-action">
+                            <i class="fas fa-sticky-note me-2"></i> Notes App
+                        </a>
+                        <a href="/tools/text-formatter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-text-width me-2"></i> Text Formatter
+                        </a>
+                        <a href="/tools/character-counter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calculator me-2"></i> Character Counter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Text editor functionality
+        class TextEditor {
+            constructor() {
+                this.editor = document.getElementById('editor');
+                this.history = []; // For undo functionality
+                this.historyIndex = -1;
+                this.maxHistory = 50;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.updateStats();
+                
+                // Load recent documents from localStorage
+                this.loadRecentDocuments();
+            }
+            
+            initializeElements() {
+                this.wordCountEl = document.getElementById('wordCount');
+                this.charCountEl = document.getElementById('charCount');
+                this.charCountNoSpaceEl = document.getElementById('charCountNoSpace');
+                this.sidebarWordCountEl = document.getElementById('sidebarWordCount');
+                this.sidebarCharCountEl = document.getElementById('sidebarCharCount');
+                this.lineCountEl = document.getElementById('lineCount');
+                this.readingTimeEl = document.getElementById('readingTime');
+                this.recentDocsListEl = document.getElementById('recentDocsList');
+                
+                // Toolbar buttons
+                this.boldBtn = document.getElementById('boldBtn');
+                this.italicBtn = document.getElementById('italicBtn');
+                this.underlineBtn = document.getElementById('underlineBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.selectAllBtn = document.getElementById('selectAllBtn');
+                this.undoBtn = document.getElementById('undoBtn');
+                this.redoBtn = document.getElementById('redoBtn');
+                this.saveBtn = document.getElementById('saveBtn');
+                this.loadBtn = document.getElementById('loadBtn');
+                this.exportBtn = document.getElementById('exportBtn');
+                this.clearEditorBtn = document.getElementById('clearEditorBtn');
+            }
+            
+            bindEvents() {
+                // Editor events
+                this.editor.addEventListener('input', () => {
+                    this.saveToHistory();
+                    this.updateStats();
+                });
+                
+                this.editor.addEventListener('keyup', (e) => {
+                    if (e.ctrlKey) {
+                        switch(e.key) {
+                            case 'b':
+                                e.preventDefault();
+                                this.formatText('bold');
+                                break;
+                            case 'i':
+                                e.preventDefault();
+                                this.formatText('italic');
+                                break;
+                            case 'u':
+                                e.preventDefault();
+                                this.formatText('underline');
+                                break;
+                            case 'z':
+                                e.preventDefault();
+                                if (e.shiftKey) {
+                                    this.redo();
+                                } else {
+                                    this.undo();
+                                }
+                                break;
+                            case 'y':
+                                e.preventDefault();
+                                this.redo();
+                                break;
+                            case 'a':
+                                e.preventDefault();
+                                this.selectAll();
+                                break;
+                            case 's':
+                                e.preventDefault();
+                                this.saveDocument();
+                                break;
+                            case 'o':
+                                e.preventDefault();
+                                this.loadDocument();
+                                break;
+                        }
+                    }
+                });
+                
+                // Toolbar button events
+                this.boldBtn.addEventListener('click', () => this.formatText('bold'));
+                this.italicBtn.addEventListener('click', () => this.formatText('italic'));
+                this.underlineBtn.addEventListener('click', () => this.formatText('underline'));
+                this.clearBtn.addEventListener('click', () => this.clearFormatting());
+                this.selectAllBtn.addEventListener('click', () => this.selectAll());
+                this.undoBtn.addEventListener('click', () => this.undo());
+                this.redoBtn.addEventListener('click', () => this.redo());
+                this.saveBtn.addEventListener('click', () => this.saveDocument());
+                this.loadBtn.addEventListener('click', () => this.loadDocument());
+                this.exportBtn.addEventListener('click', () => this.exportAsText());
+                this.clearEditorBtn.addEventListener('click', () => this.clearEditor());
+                
+                // Font size dropdown
+                document.querySelectorAll('.dropdown-menu [data-size]').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const size = e.target.getAttribute('data-size') || e.target.closest('[data-size]').getAttribute('data-size');
+                        this.setFontSize(size);
+                    });
+                });
+                
+                // Alignment dropdown
+                document.querySelectorAll('.dropdown-menu [data-align]').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const align = e.target.getAttribute('data-align') || e.target.closest('[data-align]').getAttribute('data-align');
+                        this.setAlignment(align);
+                    });
+                });
+            }
+            
+            formatText(command) {
+                document.execCommand(command, false, null);
+                this.editor.focus();
+            }
+            
+            clearFormatting() {
+                document.execCommand('removeFormat', false, null);
+                this.editor.focus();
+            }
+            
+            setFontSize(size) {
+                document.execCommand('fontSize', false, size);
+                this.editor.focus();
+            }
+            
+            setAlignment(align) {
+                document.execCommand('justify' + align.charAt(0).toUpperCase() + align.slice(1), false, null);
+                this.editor.focus();
+            }
+            
+            selectAll() {
+                this.editor.select();
+            }
+            
+            saveToHistory() {
+                const content = this.editor.value;
+                
+                // If we're not at the end of the history, truncate it
+                if (this.historyIndex < this.history.length - 1) {
+                    this.history = this.history.slice(0, this.historyIndex + 1);
+                }
+                
+                // Add current content to history
+                this.history.push(content);
+                
+                // Limit history size
+                if (this.history.length > this.maxHistory) {
+                    this.history.shift();
+                }
+                
+                this.historyIndex = this.history.length - 1;
+            }
+            
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.editor.value = this.history[this.historyIndex];
+                    this.updateStats();
+                }
+            }
+            
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.editor.value = this.history[this.historyIndex];
+                    this.updateStats();
+                }
+            }
+            
+            updateStats() {
+                const text = this.editor.value;
+                const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+                const chars = text.length;
+                const charsNoSpace = text.replace(/\s/g, '').length;
+                const lines = text.split('\n').length;
+                
+                // Calculate reading time (average 200 words per minute)
+                const readingTime = Math.ceil(words / 200);
+                
+                // Update stats
+                this.wordCountEl.textContent = words;
+                this.charCountEl.textContent = chars;
+                this.charCountNoSpaceEl.textContent = charsNoSpace;
+                this.sidebarWordCountEl.textContent = words;
+                this.sidebarCharCountEl.textContent = chars;
+                this.lineCountEl.textContent = lines;
+                this.readingTimeEl.textContent = `${readingTime} min`;
+            }
+            
+            saveDocument() {
+                const content = this.editor.value;
+                if (!content.trim()) {
+                    alert('Cannot save an empty document');
+                    return;
+                }
+                
+                const title = prompt('Enter document title:', `Document ${new Date().toLocaleDateString()}`);
+                if (!title) return;
+                
+                // Save to localStorage
+                const doc = {
+                    id: Date.now().toString(),
+                    title: title,
+                    content: content,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+                
+                // Add to recent documents
+                let recentDocs = JSON.parse(localStorage.getItem('text-editor-recent-docs')) || [];
+                recentDocs.unshift(doc);
+                
+                // Keep only the 5 most recent
+                if (recentDocs.length > 5) {
+                    recentDocs = recentDocs.slice(0, 5);
+                }
+                
+                localStorage.setItem('text-editor-recent-docs', JSON.stringify(recentDocs));
+                
+                // Reload recent docs list
+                this.loadRecentDocuments();
+                
+                // Record tool usage
+                this.recordToolUsage('save_document');
+                
+                alert('Document saved successfully!');
+            }
+            
+            loadDocument() {
+                const recentDocs = JSON.parse(localStorage.getItem('text-editor-recent-docs')) || [];
+                if (recentDocs.length === 0) {
+                    alert('No saved documents found');
+                    return;
+                }
+                
+                // Create a selection dialog
+                const titles = recentDocs.map((doc, index) => `${index + 1}. ${doc.title}`).join('\n');
+                const selection = prompt(`Select a document to load:\n\n${titles}\nEnter the number:`);
+                
+                if (selection) {
+                    const index = parseInt(selection) - 1;
+                    if (index >= 0 && index < recentDocs.length) {
+                        this.editor.value = recentDocs[index].content;
+                        this.saveToHistory();
+                        this.updateStats();
+                        
+                        // Record tool usage
+                        this.recordToolUsage('load_document');
+                        
+                        alert(`Loaded document: ${recentDocs[index].title}`);
+                    } else {
+                        alert('Invalid selection');
+                    }
+                }
+            }
+            
+            exportAsText() {
+                const content = this.editor.value;
+                if (!content.trim()) {
+                    alert('Nothing to export');
+                    return;
+                }
+                
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `document-${new Date().toISOString().slice(0, 19)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                // Record tool usage
+                this.recordToolUsage('export_text');
+            }
+            
+            clearEditor() {
+                if (confirm('Are you sure you want to clear the editor?')) {
+                    this.editor.value = '';
+                    this.saveToHistory();
+                    this.updateStats();
+                    
+                    // Record tool usage
+                    this.recordToolUsage('clear_editor');
+                }
+            }
+            
+            loadRecentDocuments() {
+                const recentDocs = JSON.parse(localStorage.getItem('text-editor-recent-docs')) || [];
+                this.recentDocsListEl.innerHTML = '';
+                
+                if (recentDocs.length === 0) {
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item';
+                    item.textContent = 'No recent documents';
+                    this.recentDocsListEl.appendChild(item);
+                    return;
+                }
+                
+                recentDocs.forEach(doc => {
+                    const item = document.createElement('a');
+                    item.className = 'list-group-item list-group-item-action';
+                    item.href = '#';
+                    item.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${doc.title}</h6>
+                            <small>${new Date(doc.updatedAt).toLocaleString()}</small>
+                        </div>
+                        <p class="mb-1">${doc.content.substring(0, 60)}${doc.content.length > 60 ? '...' : ''}</p>
+                    `;
+                    
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.editor.value = doc.content;
+                        this.saveToHistory();
+                        this.updateStats();
+                    });
+                    
+                    this.recentDocsListEl.appendChild(item);
+                });
+            }
+            
+            recordToolUsage(action) {
+                // Send analytics data
+                fetch('/api/analytics/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        toolId: 'text-editor',
+                        action: action,
+                        ip: '127.0.0.1',
+                        userAgent: navigator.userAgent
+                    })
+                }).catch(error => console.error('Analytics tracking failed:', error));
+            }
+        }
+        
+        // Initialize the text editor when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const textEditor = new TextEditor();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>

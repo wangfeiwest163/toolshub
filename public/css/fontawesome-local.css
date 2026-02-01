@@ -1,0 +1,127 @@
+/* Local FontAwesome CSS with embedded icons to avoid 404 errors */
+
+.fa, .fas, .far {
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* QR Code Generator specific icons */
+.fa-qrcode::before { content: '\f029'; }
+.fa-download::before { content: '\f019'; }
+.fa-redo::before { content: '\f01e'; }
+.fa-star::before { content: '\f005'; }
+.fa-compress-alt::before { content: '\f066'; }
+.fa-external-link-alt::before { content: '\f08e'; }
+.fa-chart-bar::before { content: '\f080'; }
+.fa-info-circle::before { content: '\f05a'; }
+.fa-check-circle::before { content: '\f058'; }
+.fa-exclamation-triangle::before { content: '\f071'; }
+.fa-exclamation-circle::before { content: '\f06a'; }
+.fa-times::before { content: '\f00d'; }
+.fa-search::before { content: '\f002'; }
+.fa-tools::before { content: '\f085'; }
+.fa-link::before { content: '\f0c1'; }
+.fa-key::before { content: '\f084'; }
+.fa-barcode::before { content: '\f02a'; }
+.fa-copy::before { content: '\f0c5'; }
+
+/* Common utility classes */
+.fa-lg { font-size: 1.33333em; line-height: 0.75em; vertical-align: -.0667em; }
+.fa-xl { font-size: 1.5em; }
+.fa-2x { font-size: 2em; }
+.fa-3x { font-size: 3em; }
+.fa-4x { font-size: 4em; }
+.fa-5x { font-size: 5em; }
+.fa-fw { text-align: center; width: 1.25em; }
+.fa-ul { list-style-type: none; margin-left: 2.5em; padding-left: 0; }
+.fa-li { left: -2em; position: absolute; text-align: center; width: 2em; line-height: inherit; }
+
+/* Additional icon classes */
+.far {
+  font-weight: 400;
+}
+
+.fas {
+  font-weight: 900;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+
+.mt-2 {
+  margin-top: 0.5rem !important;
+}
+
+.mt-3 {
+  margin-top: 1rem !important;
+}
+
+.mt-4 {
+  margin-top: 1.5rem !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+.ms-2 {
+  margin-left: 0.5rem !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.w-100 {
+  width: 100% !important;
+}
+
+.h-100 {
+  height: 100% !important;
+}
+
+.text-decoration-none {
+  text-decoration: none !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

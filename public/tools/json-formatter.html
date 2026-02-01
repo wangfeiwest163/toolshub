@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .json-input, .json-output {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 300px;
+            resize: vertical;
+        }
+        
+        .validation-badge {
+            margin-left: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        
+        .valid {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .invalid {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .json-tree {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 500px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+        
+        .json-key {
+            color: #800080; /* Purple */
+        }
+        
+        .json-string {
+            color: #008000; /* Green */
+        }
+        
+        .json-number {
+            color: #0000ff; /* Blue */
+        }
+        
+        .json-boolean {
+            color: #ff0000; /* Red */
+        }
+        
+        .json-null {
+            color: #808080; /* Gray */
+        }
+        
+        .action-buttons {
+            margin-top: 10px;
+        }
+        
+        .stats-container {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body data-tool-id="33" data-tool-name="json-formatter">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Developer Tools')">Developer Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">JSON Formatter</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>JSON Formatter</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Format, validate, and prettify your JSON data with syntax highlighting.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="jsonInput" class="form-label">Input JSON</label>
+                                    <span id="inputValidation" class="validation-badge">Not validated</span>
+                                </div>
+                                <textarea class="form-control json-input" id="jsonInput" rows="10" placeholder="Paste your JSON here..."></textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-primary" id="formatBtn">
+                                    <i class="fas fa-indent"></i> Format JSON
+                                </button>
+                                <button class="btn btn-success" id="validateBtn">
+                                    <i class="fas fa-check-circle"></i> Validate
+                                </button>
+                                <button class="btn btn-info" id="minifyBtn">
+                                    <i class="fas fa-compress-alt"></i> Minify
+                                </button>
+                                <button class="btn btn-secondary" id="sampleBtn">
+                                    <i class="fas fa-lightbulb"></i> Sample
+                                </button>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="jsonOutput" class="form-label">Formatted JSON</label>
+                                    <span id="outputValidation" class="validation-badge">Not validated</span>
+                                </div>
+                                <div class="json-tree" id="jsonOutput">Formatted JSON will appear here...</div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <button class="btn btn-outline-primary" id="copyOutputBtn">
+                                    <i class="fas fa-copy"></i> Copy Formatted
+                                </button>
+                                <button class="btn btn-outline-secondary" id="clearBtn">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            
+                            <div id="errorContainer" class="mt-3" style="display: none;">
+                                <div class="alert alert-danger" role="alert" id="errorMsg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>JSON Formatting Tips</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Use "Format JSON" to prettify and indent your JSON data</li>
+                            <li>Use "Validate" to check if your JSON is syntactically correct</li>
+                            <li>Use "Minify" to remove all unnecessary whitespace</li>
+                            <li>Use "Sample" to load example JSON data</li>
+                            <li>Copy the formatted result with the "Copy Formatted" button</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>JSON Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-container">
+                            <div class="mb-2">
+                                <strong>Input:</strong>
+                                <div>Characters: <span id="inputChars">0</span></div>
+                                <div>Lines: <span id="inputLines">0</span></div>
+                                <div>Size: <span id="inputSize">0</span> KB</div>
+                            </div>
+                            <div class="mt-3">
+                                <strong>Output:</strong>
+                                <div>Characters: <span id="outputChars">0</span></div>
+                                <div>Size: <span id="outputSize">0</span> KB</div>
+                                <div>Compression: <span id="compressionRatio">0%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>JSON Path Finder</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="jsonPath" class="form-label">Enter JSON Path</label>
+                            <input type="text" class="form-control" id="jsonPath" placeholder="$.store.book[*].author">
+                        </div>
+                        <button class="btn btn-outline-primary w-100" id="findPathBtn">
+                            <i class="fas fa-search"></i> Find Path
+                        </button>
+                        <div class="mt-2" id="pathResult"></div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/xml-formatter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-code me-2"></i> XML Formatter
+                        </a>
+                        <a href="/tools/yaml-parser" class="list-group-item list-group-item-action">
+                            <i class="fas fa-file-code me-2"></i> YAML Parser
+                        </a>
+                        <a href="/tools/base64-encoder" class="list-group-item list-group-item-action">
+                            <i class="fas fa-lock me-2"></i> Base64 Encoder/Decoder
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JSON formatter functionality
+        class JsonFormatter {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.updateInputStats();
+                
+                // Bind input event to update stats
+                this.jsonInput.addEventListener('input', () => {
+                    this.updateInputStats();
+                    this.validateJson();
+                });
+            }
+            
+            initializeElements() {
+                this.jsonInput = document.getElementById('jsonInput');
+                this.jsonOutput = document.getElementById('jsonOutput');
+                this.formatBtn = document.getElementById('formatBtn');
+                this.validateBtn = document.getElementById('validateBtn');
+                this.minifyBtn = document.getElementById('minifyBtn');
+                this.sampleBtn = document.getElementById('sampleBtn');
+                this.copyOutputBtn = document.getElementById('copyOutputBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.inputValidation = document.getElementById('inputValidation');
+                this.outputValidation = document.getElementById('outputValidation');
+                this.errorContainer = document.getElementById('errorContainer');
+                this.errorMsg = document.getElementById('errorMsg');
+                this.jsonPath = document.getElementById('jsonPath');
+                this.findPathBtn = document.getElementById('findPathBtn');
+                this.pathResult = document.getElementById('pathResult');
+                
+                // Stats elements
+                this.inputChars = document.getElementById('inputChars');
+                this.inputLines = document.getElementById('inputLines');
+                this.inputSize = document.getElementById('inputSize');
+                this.outputChars = document.getElementById('outputChars');
+                this.outputSize = document.getElementById('outputSize');
+                this.compressionRatio = document.getElementById('compressionRatio');
+            }
+            
+            bindEvents() {
+                this.formatBtn.addEventListener('click', () => this.formatJson());
+                this.validateBtn.addEventListener('click', () => this.validateJson());
+                this.minifyBtn.addEventListener('click', () => this.minifyJson());
+                this.sampleBtn.addEventListener('click', () => this.loadSample());
+                this.copyOutputBtn.addEventListener('click', () => this.copyOutput());
+                this.clearBtn.addEventListener('click', () => this.clearAll());
+                this.findPathBtn.addEventListener('click', () => this.findJsonPath());
+            }
+            
+            formatJson() {
+                const input = this.jsonInput.value.trim();
+                if (!input) {
+                    this.showError('Please enter JSON to format');
+                    return;
+                }
+                
+                try {
+                    // Parse the JSON
+                    const parsed = JSON.parse(input);
+                    
+                    // Format it with indentation
+                    const formatted = JSON.stringify(parsed, null, 2);
+                    
+                    // Display formatted JSON with syntax highlighting
+                    this.displayFormattedJson(parsed);
+                    
+                    // Update validation badges
+                    this.inputValidation.textContent = 'Valid JSON';
+                    this.inputValidation.className = 'validation-badge valid';
+                    this.outputValidation.textContent = 'Valid JSON';
+                    this.outputValidation.className = 'validation-badge valid';
+                    
+                    // Hide error container
+                    this.errorContainer.style.display = 'none';
+                    
+                    // Update stats
+                    this.updateOutputStats(formatted);
+                    
+                    // Record tool usage
+                    this.recordToolUsage('format_json');
+                } catch (e) {
+                    this.showError(`Invalid JSON: ${e.message}`);
+                }
+            }
+            
+            validateJson() {
+                const input = this.jsonInput.value.trim();
+                if (!input) {
+                    this.inputValidation.textContent = 'Empty';
+                    this.inputValidation.className = 'validation-badge';
+                    return;
+                }
+                
+                try {
+                    JSON.parse(input);
+                    this.inputValidation.textContent = 'Valid JSON';
+                    this.inputValidation.className = 'validation-badge valid';
+                } catch (e) {
+                    this.inputValidation.textContent = 'Invalid JSON';
+                    this.inputValidation.className = 'validation-badge invalid';
+                }
+            }
+            
+            minifyJson() {
+                const input = this.jsonInput.value.trim();
+                if (!input) {
+                    this.showError('Please enter JSON to minify');
+                    return;
+                }
+                
+                try {
+                    // Parse the JSON
+                    const parsed = JSON.parse(input);
+                    
+                    // Minify it (no spacing)
+                    const minified = JSON.stringify(parsed);
+                    
+                    // Display minified JSON
+                    this.jsonOutput.textContent = minified;
+                    
+                    // Update validation badges
+                    this.inputValidation.textContent = 'Valid JSON';
+                    this.inputValidation.className = 'validation-badge valid';
+                    this.outputValidation.textContent = 'Valid JSON';
+                    this.outputValidation.className = 'validation-badge valid';
+                    
+                    // Hide error container
+                    this.errorContainer.style.display = 'none';
+                    
+                    // Update stats
+                    this.updateOutputStats(minified);
+                    
+                    // Record tool usage
+                    this.recordToolUsage('minify_json');
+                } catch (e) {
+                    this.showError(`Invalid JSON: ${e.message}`);
+                }
+            }
+            
+            loadSample() {
+                const sampleJson = `{
+  "store": {
+    "book": [
+      {
+        "category": "reference",
+        "author": "Nigel Rees",
+        "title": "Sayings of the Century",
+        "price": 8.95
+      },
+      {
+        "category": "fiction",
+        "author": "Evelyn Waugh",
+        "title": "Sword of Honour",
+        "price": 12.99
+      }
+    ],
+    "bicycle": {
+      "color": "red",
+      "price": 19.95
+    }
+  }
+}`;
+                
+                this.jsonInput.value = sampleJson;
+                this.formatJson();
+                
+                // Record tool usage
+                this.recordToolUsage('load_sample');
+            }
+            
+            copyOutput() {
+                if (this.jsonOutput.textContent === 'Formatted JSON will appear here...') {
+                    this.showError('No formatted JSON to copy');
+                    return;
+                }
+                
+                // Create a temporary textarea to copy from
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = this.jsonOutput.textContent;
+                document.body.appendChild(tempTextarea);
+                tempTextarea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        this.showSuccess('JSON copied to clipboard!');
+                    } else {
+                        this.showError('Failed to copy JSON');
+                    }
+                } catch (err) {
+                    this.showError('Browser does not support copying');
+                }
+                
+                document.body.removeChild(tempTextarea);
+                
+                // Record tool usage
+                this.recordToolUsage('copy_output');
+            }
+            
+            clearAll() {
+                this.jsonInput.value = '';
+                this.jsonOutput.textContent = 'Formatted JSON will appear here...';
+                this.inputValidation.textContent = 'Not validated';
+                this.inputValidation.className = 'validation-badge';
+                this.outputValidation.textContent = 'Not validated';
+                this.outputValidation.className = 'validation-badge';
+                this.errorContainer.style.display = 'none';
+                this.updateInputStats();
+                this.updateOutputStats('');
+                
+                // Record tool usage
+                this.recordToolUsage('clear_all');
+            }
+            
+            findJsonPath() {
+                const path = this.jsonPath.value.trim();
+                if (!path) {
+                    this.showError('Please enter a JSON path');
+                    return;
+                }
+                
+                const input = this.jsonInput.value.trim();
+                if (!input) {
+                    this.showError('Please enter JSON to search');
+                    return;
+                }
+                
+                try {
+                    const parsed = JSON.parse(input);
+                    // For simplicity, we'll implement basic path navigation
+                    // In a real implementation, we would use a JSONPath library
+                    const result = this.evaluateJsonPath(parsed, path);
+                    
+                    if (result !== undefined) {
+                        this.pathResult.innerHTML = `
+                            <div class="alert alert-success mt-2" role="alert">
+                                <strong>Found:</strong> ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
+                            </div>
+                        `;
+                    } else {
+                        this.pathResult.innerHTML = `
+                            <div class="alert alert-warning mt-2" role="alert">
+                                <strong>Path not found:</strong> ${path}
+                            </div>
+                        `;
+                    }
+                    
+                    // Record tool usage
+                    this.recordToolUsage('find_path');
+                } catch (e) {
+                    this.showError(`Error evaluating path: ${e.message}`);
+                }
+            }
+            
+            evaluateJsonPath(obj, path) {
+                // Simplified path evaluation for common patterns
+                // This is a basic implementation - a full JSONPath evaluator would be more complex
+                try {
+                    // Remove the $ at the beginning
+                    let cleanPath = path.replace(/^\$/, '');
+                    
+                    // Split the path by dots and brackets
+                    const parts = cleanPath.split(/[\.\[\]]/).filter(p => p !== '');
+                    
+                    let current = obj;
+                    for (const part of parts) {
+                        if (part === '') continue;
+                        current = current[part];
+                        if (current === undefined) break;
+                    }
+                    
+                    return current;
+                } catch (e) {
+                    return undefined;
+                }
+            }
+            
+            displayFormattedJson(jsonObj) {
+                // Create a nicely formatted and syntax-highlighted version
+                this.jsonOutput.innerHTML = this.syntaxHighlightJson(jsonObj);
+            }
+            
+            syntaxHighlightJson(jsonObj) {
+                // Convert to JSON string with indentation
+                const jsonString = JSON.stringify(jsonObj, null, 2);
+                
+                // Apply syntax highlighting
+                return jsonString
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/("(\w+)":)/g, '<span class="json-key">$1</span>')
+                    .replace(/(".*?"):/g, '<span class="json-string">$1</span>:')
+                    .replace(/: (".*?")/g, ': <span class="json-string">$1</span>')
+                    .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                    .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                    .replace(/: (null)/g, ': <span class="json-null">$1</span>');
+            }
+            
+            updateInputStats() {
+                const text = this.jsonInput.value;
+                const chars = text.length;
+                const lines = text ? text.split('\n').length : 0;
+                const size = (new Blob([text]).size / 1024).toFixed(2);
+                
+                this.inputChars.textContent = chars;
+                this.inputLines.textContent = lines;
+                this.inputSize.textContent = size;
+            }
+            
+            updateOutputStats(output) {
+                const chars = output.length;
+                const size = (new Blob([output]).size / 1024).toFixed(2);
+                
+                // Calculate compression ratio if both input and output exist
+                const inputSize = this.jsonInput.value.length;
+                let ratio = 0;
+                if (inputSize > 0) {
+                    ratio = ((Math.abs(inputSize - chars) / inputSize) * 100).toFixed(1);
+                }
+                
+                this.outputChars.textContent = chars;
+                this.outputSize.textContent = size;
+                this.compressionRatio.textContent = ratio + '%';
+            }
+            
+            showError(message) {
+                this.errorMsg.textContent = message;
+                this.errorContainer.style.display = 'block';
+            }
+            
+            showSuccess(message) {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'alert alert-success';
+                successDiv.textContent = message;
+                
+                document.body.appendChild(successDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(successDiv);
+                }, 3000);
+            }
+            
+            recordToolUsage(action) {
+                // Send analytics data
+                fetch('/api/analytics/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        toolId: 'json-formatter',
+                        action: action,
+                        ip: '127.0.0.1',
+                        userAgent: navigator.userAgent
+                    })
+                }).catch(error => console.error('Analytics tracking failed:', error));
+            }
+        }
+        
+        // Initialize the JSON formatter when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const jsonFormatter = new JsonFormatter();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>

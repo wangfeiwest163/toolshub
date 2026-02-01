@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Reverser - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/tool-page.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body data-tool-id="24" data-tool-name="text-reverser">
+    <div class="container">
+        <!-- Header -->
+        <header class="tool-header">
+            <div class="header-content">
+                <div class="tool-info">
+                    <div class="tool-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <div class="tool-details">
+                        <h1>Text Reverser</h1>
+                        <span class="tool-category">Text Tools</span>
+                    </div>
+                </div>
+                <button class="favorite-btn" id="favoriteBtn" title="Add to favorites">
+                    <i class="far fa-star"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading Text Reverser...</p>
+        </div>
+
+        <!-- Error message -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p id="errorText">An error occurred while loading the tool.</p>
+        </div>
+
+        <!-- Tool Content -->
+        <main class="tool-content">
+            <div class="tool-description">
+                <p>This is the Text Reverser tool. It provides functionality for reversing text.</p>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="tool-interface">
+                <div class="tool-controls">
+                    <!-- Add tool-specific controls here -->
+                    <div id="text-reverserContainer">
+                        <p>This is where the Text Reverser interface would go. The actual functionality would be implemented here.</p>
+                        <p>For demonstration purposes, this is a placeholder page.</p>
+                        
+                        <p>Additional controls for text reverser would be implemented here.</p>
+                    </div>
+                </div>
+
+                <div class="tool-actions">
+                    <button class="btn btn-primary" id="processBtn">Process</button>
+                    <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                    <button class="btn btn-outline" id="saveBtn">Save Result</button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h3>Results</h3>
+                <div id="resultsOutput" class="results-output">
+                    <p>Your results will appear here after processing.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Usage Tips -->
+        <section class="usage-tips">
+            <h3>How to use Text Reverser</h3>
+            <ul>
+                <li>Enter your input in the designated fields</li>
+                <li>Click "Process" to get your results</li>
+                <li>Use "Reset" to clear all fields</li>
+                <li>Save your results with the "Save Result" button</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="tool-footer">
+        <p>&copy; 2025 ToolsHub. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/tool-utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the tool
+            initTool('Text Reverser', 'text-reverser');
+            
+            // Set up event listeners
+            document.getElementById('processBtn').addEventListener('click', processTool);
+            document.getElementById('resetBtn').addEventListener('click', resetTool);
+            document.getElementById('saveBtn').addEventListener('click', saveResult);
+            document.getElementById('favoriteBtn').addEventListener('click', toggleFavorite);
+            
+            // Track tool usage
+            trackToolUsage('text-reverser', 'view');
+        });
+
+        // Tool-specific functions
+        function initTool(toolName, toolId) {
+            showLoading(false);
+            console.log(`Initializing ${toolName}`);
+        }
+
+        function processTool() {
+            showLoading(true);
+            
+            // Simulate processing delay
+            setTimeout(() => {
+                showLoading(false);
+                
+                // Get input values and process
+                const result = simulateProcessing();
+                displayResult(result);
+                
+                // Track tool usage
+                trackToolUsage('text-reverser', 'use');
+            }, 1500);
+        }
+
+        function simulateProcessing() {
+            // Simulate processing based on tool type
+            return {
+                success: true,
+                message: "Operation completed successfully!",
+                data: "Sample result data would go here"
+            };
+        }
+
+        function displayResult(result) {
+            const outputDiv = document.getElementById('resultsOutput');
+            if (result.success) {
+                outputDiv.innerHTML = '<div class="success-message">' + result.message + '</div>';
+                if (result.data) {
+                    outputDiv.innerHTML += '<div class="result-data">' + result.data + '</div>';
+                }
+            } else {
+                outputDiv.innerHTML = '<div class="error-message">' + result.message + '</div>';
+            }
+        }
+
+        function resetTool() {
+            // Reset form fields
+            const container = document.getElementById('text-reverserContainer');
+            const inputs = container.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+            
+            // Clear results
+            document.getElementById('resultsOutput').innerHTML = '<p>Your results will appear here after processing.</p>';
+        }
+
+        function saveResult() {
+            alert('Result saved successfully!');
+        }
+
+        function toggleFavorite() {
+            const btn = document.getElementById('favoriteBtn');
+            btn.classList.toggle('favorited');
+            
+            if (btn.classList.contains('favorited')) {
+                btn.innerHTML = '<i class="fas fa-star"></i>';
+                alert('Text Reverser added to favorites!');
+                
+                // Track favorite action
+                trackToolUsage('text-reverser', 'favorite');
+            } else {
+                btn.innerHTML = '<i class="far fa-star"></i>';
+                alert('Text Reverser removed from favorites!');
+            }
+        }
+
+        function showLoading(show) {
+            const loader = document.getElementById('loadingIndicator');
+            loader.style.display = show ? 'flex' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function trackToolUsage(toolId, action) {
+            // Send analytics data
+            fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    toolId: toolId,
+                    action: action,
+                    ip: getClientIP(),
+                    userAgent: navigator.userAgent
+                })
+            })
+            .catch(error => console.error('Analytics tracking failed:', error));
+        }
+
+        function getClientIP() {
+            // In a real implementation, this would get the actual client IP
+            return '127.0.0.1';
+        }
+    </script>
+</body>
+</html>

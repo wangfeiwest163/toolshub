@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Analyzer | ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .analysis-result {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .loading {
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #0d6efd;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body data-tool-id="6" data-tool-name="url-analyzer">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">URL Analyzer</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>URL Analyzer</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Analyze any URL to get detailed information about its structure, headers, redirects, and security.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="mb-3">
+                                <label for="targetUrl" class="form-label">Enter URL to Analyze</label>
+                                <input type="url" class="form-control" id="targetUrl" placeholder="https://www.example.com">
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-primary" type="button" id="analyzeBtn">
+                                    <i class="fas fa-search"></i> Analyze URL <span id="loadingSpinner" class="loading"><div class="spinner"></div></span>
+                                </button>
+                            </div>
+                            
+                            <div id="errorContainer" class="mb-3"></div>
+                            
+                            <div id="resultsContainer" class="mt-4" style="display: none;">
+                                <h4>Analysis Results</h4>
+                                
+                                <div class="analysis-result">
+                                    <h5>Basic Information</h5>
+                                    <div id="basicInfo"></div>
+                                </div>
+                                
+                                <div class="analysis-result">
+                                    <h5>HTTP Headers</h5>
+                                    <div id="headersInfo"></div>
+                                </div>
+                                
+                                <div class="analysis-result">
+                                    <h5>Security Information</h5>
+                                    <div id="securityInfo"></div>
+                                </div>
+                                
+                                <div class="analysis-result">
+                                    <h5>Redirect Chain</h5>
+                                    <div id="redirectsInfo"></div>
+                                </div>
+                                
+                                <div class="analysis-result">
+                                    <h5>Performance Metrics</h5>
+                                    <div id="performanceInfo"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>Enter a URL in the input field above</li>
+                            <li>Click "Analyze URL" to begin analysis</li>
+                            <li>View detailed information about the URL including headers, redirects, and security</li>
+                            <li>Check performance metrics and potential issues</li>
+                        </ol>
+                        <p class="mt-3">Our URL analyzer provides comprehensive information about any web resource to help you understand its behavior and potential issues.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/url-shortener" class="list-group-item list-group-item-action">
+                            <i class="fas fa-compress-alt me-2"></i> URL Shortener
+                        </a>
+                        <a href="/tools/link-validator" class="list-group-item list-group-item-action">
+                            <i class="fas fa-link me-2"></i> Link Validator
+                        </a>
+                        <a href="/tools/website-scraper" class="list-group-item list-group-item-action">
+                            <i class="fas fa-download me-2"></i> Website Scraper
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Analysis Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i> HTTP header inspection</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Redirect tracking</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Security header evaluation</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Performance metrics</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> SSL/TLS information</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/url-analyzer.js"></script>
+    <script>
+        // Initialize the page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Initialize analyze button functionality
+            document.getElementById('analyzeBtn').addEventListener('click', function() {
+                const targetUrl = document.getElementById('targetUrl').value.trim();
+                if (!targetUrl) {
+                    showError('Please enter a URL to analyze');
+                    return;
+                }
+                
+                // Show loading spinner
+                document.getElementById('loadingSpinner').classList.remove('loading');
+                document.getElementById('resultsContainer').style.display = 'none';
+                clearError();
+                
+                // Call the analyze function
+                analyzeUrl(targetUrl)
+                    .then(result => {
+                        displayResults(result);
+                    })
+                    .catch(error => {
+                        showError(error.message || 'An error occurred during analysis');
+                    })
+                    .finally(() => {
+                        document.getElementById('loadingSpinner').classList.add('loading');
+                    });
+            });
+        });
+        
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        }
+        
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+        
+        function displayResults(results) {
+            // Display basic information
+            document.getElementById('basicInfo').innerHTML = `
+                <p><strong>Original URL:</strong> ${results.originalUrl || results.basic.url}</p>
+                <p><strong>Final URL:</strong> ${results.finalUrl || results.basic.url}</p>
+                <p><strong>Status Code:</strong> ${results.basic.statusCode || results.finalResponse?.statusCode || 'N/A'}</p>
+                <p><strong>Content Type:</strong> ${results.basic.contentType || results.finalResponse?.contentType || 'N/A'}</p>
+                <p><strong>Content Length:</strong> ${results.basic.contentLength || results.finalResponse?.size || 'N/A'}</p>
+                <p><strong>Total Response Time:</strong> ${results.responseTime || results.basic.responseTime} ms</p>
+            `;
+            
+            // Display headers
+            let headersHtml = '<ul class="list-group">';
+            const headers = results.headers || results.finalResponse?.headers || {};
+            for (const [header, value] of Object.entries(headers)) {
+                headersHtml += `<li class="list-group-item"><strong>${header}:</strong> ${value}</li>`;
+            }
+            headersHtml += '</ul>';
+            document.getElementById('headersInfo').innerHTML = headersHtml;
+            
+            // Display security info
+            const securityInfo = results.security || {};
+            document.getElementById('securityInfo').innerHTML = `
+                <p><strong>Uses HTTPS:</strong> ${securityInfo.https ? 'Yes' : 'No'}</p>
+                <p><strong>SSL Certificate Valid:</strong> ${securityInfo.sslValid ? 'Yes' : 'Assumed Valid'}</p>
+                <p><strong>HSTS Enabled:</strong> ${securityInfo.hsts ? 'Yes' : 'No'}</p>
+                <p><strong>Content Security Policy:</strong> ${securityInfo.csp ? 'Present' : 'Not present'}</p>
+                <p><strong>X-Frame-Options:</strong> ${securityInfo.xfo || 'Not set'}</p>
+                <p><strong>Security Score:</strong> ${results.security?.securityScore !== undefined ? results.security.securityScore + '%' : 'N/A'}</p>
+            `;
+            
+            // Display redirects
+            const redirects = results.redirects || [];
+            if (redirects.length > 1) { // More than just the final destination
+                let redirectsHtml = '<ul class="list-group">';
+                redirects.forEach((redirect, index) => {
+                    if (redirect.from !== redirect.to) { // Only show actual redirects
+                        redirectsHtml += `<li class="list-group-item">${index + 1}. ${redirect.from} → ${redirect.to} (${redirect.statusCode})</li>`;
+                    }
+                });
+                redirectsHtml += '</ul>';
+                document.getElementById('redirectsInfo').innerHTML = redirectsHtml;
+            } else {
+                document.getElementById('redirectsInfo').innerHTML = '<p>No redirects detected</p>';
+            }
+            
+            // Display performance info
+            const perf = results.performance || {};
+            document.getElementById('performanceInfo').innerHTML = `
+                <p><strong>DNS Lookup Time:</strong> ${perf.dnsLookupTime || perf.dnsTime || 'N/A'} ms</p>
+                <p><strong>Connect Time:</strong> ${perf.connectTime || 'N/A'} ms</p>
+                <p><strong>TLS Handshake Time:</strong> ${perf.tlsHandshakeTime || 'N/A'} ms</p>
+                <p><strong>Time to First Byte:</strong> ${perf.timeToFirstByte || perf.firstByteTime || 'N/A'} ms</p>
+                <p><strong>Total Request Time:</strong> ${perf.totalTime || 'N/A'} ms</p>
+                <p><strong>Number of Redirects:</strong> ${perf.redirectCount || 'N/A'}</p>
+            `;
+            
+            // Display technology detection if available
+            if (results.technologies) {
+                const techHtml = `
+                    <div class="analysis-result">
+                        <h5>Detected Technologies</h5>
+                        <p><strong>Frameworks:</strong> ${results.technologies.frameworks?.length > 0 ? results.technologies.frameworks.join(', ') : 'None detected'}</p>
+                        <p><strong>Libraries:</strong> ${results.technologies.libraries?.length > 0 ? results.technologies.libraries.join(', ') : 'None detected'}</p>
+                        <p><strong>CMS:</strong> ${results.technologies.cms?.length > 0 ? results.technologies.cms.join(', ') : 'None detected'}</p>
+                        <p><strong>Servers:</strong> ${results.technologies.servers?.length > 0 ? results.technologies.servers.join(', ') : 'None detected'}</p>
+                        <p><strong>Languages:</strong> ${results.technologies.languages?.length > 0 ? results.technologies.languages.join(', ') : 'None detected'}</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').insertAdjacentHTML('beforeend', techHtml);
+            }
+            
+            // Display HTML analysis if available
+            if (results.htmlAnalysis) {
+                const htmlAnalysis = results.htmlAnalysis;
+                const htmlAnalysisHtml = `
+                    <div class="analysis-result">
+                        <h5>HTML Analysis</h5>
+                        <p><strong>Title:</strong> ${htmlAnalysis.title || 'N/A'}</p>
+                        <p><strong>Description:</strong> ${htmlAnalysis.description || 'N/A'}</p>
+                        <p><strong>Headings:</strong> H1: ${htmlAnalysis.headings?.h1 || 0}, H2: ${htmlAnalysis.headings?.h2 || 0}, H3: ${htmlAnalysis.headings?.h3 || 0}</p>
+                        <p><strong>Links:</strong> Total: ${htmlAnalysis.links?.total || 0}, Internal: ${htmlAnalysis.links?.internal || 0}, External: ${htmlAnalysis.links?.external || 0}</p>
+                        <p><strong>Images:</strong> Total: ${htmlAnalysis.images?.total || 0}, With Alt: ${htmlAnalysis.images?.withAlt || 0}</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').insertAdjacentHTML('beforeend', htmlAnalysisHtml);
+            }
+            
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
