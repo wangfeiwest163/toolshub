@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #qrcode { width: 300px; height: 300px; margin: 20px 0; }
+        .input-group { margin: 10px 0; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>QR Code Debug Page</h1>
+    <div class="input-group">
+        <label>Content to encode:</label>
+        <input type="text" id="content" value="https://example.com" style="width: 300px;">
+    </div>
+    <div class="input-group">
+        <button onclick="generateQR()">Generate QR Code</button>
+        <button onclick="clearQR()">Clear</button>
+    </div>
+    <div id="qrcode"></div>
+    <div id="debug-info" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+
+    <script src="./js/lib/qrcode.min.js"></script>
+    <script>
+        let qrInstance = null;
+        
+        function generateQR() {
+            const content = document.getElementById('content').value;
+            const debugInfo = document.getElementById('debug-info');
+            
+            if (!content) {
+                debugInfo.innerHTML = 'Error: Please enter content to encode';
+                return;
+            }
+            
+            if (typeof QRCode === 'undefined') {
+                debugInfo.innerHTML = 'Error: QRCode library not loaded';
+                return;
+            }
+            
+            try {
+                const qrcodeDiv = document.getElementById('qrcode');
+                
+                // Clear previous QR code if exists
+                if (qrInstance) {
+                    qrcodeDiv.innerHTML = '';
+                }
+                
+                // Generate new QR code
+                qrInstance = new QRCode(qrcodeDiv, {
+                    text: content,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                debugInfo.innerHTML = 'Success: QR Code generated<br>Content: ' + content;
+            } catch (e) {
+                debugInfo.innerHTML = 'Error generating QR: ' + e.message;
+                console.error('QR Generation Error:', e);
+            }
+        }
+        
+        function clearQR() {
+            document.getElementById('qrcode').innerHTML = '';
+            document.getElementById('debug-info').innerHTML = 'Cleared';
+            qrInstance = null;
+        }
+        
+        // Check if library is loaded
+        window.onload = function() {
+            const debugInfo = document.getElementById('debug-info');
+            if (typeof QRCode !== 'undefined') {
+                debugInfo.innerHTML = 'Status: QRCode library loaded successfully';
+            } else {
+                debugInfo.innerHTML = 'Error: QRCode library not loaded';
+            }
+        };
+    </script>
+</body>
+</html>

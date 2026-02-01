@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Tools | ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit" id="searchButton">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">All Tools</h1>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label for="categoryFilter" class="form-label">Filter by Category</label>
+                        <select class="form-select" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="Utility Tools">Utility Tools</option>
+                            <option value="Online Calculators">Online Calculators</option>
+                            <option value="Text Tools">Text Tools</option>
+                            <option value="Image Tools">Image Tools</option>
+                            <option value="Developer Tools">Developer Tools</option>
+                            <option value="Converter Tools">Converter Tools</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sortBy" class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy">
+                            <option value="popularity">Popularity</option>
+                            <option value="name">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button class="btn btn-outline-primary me-2" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-outline-secondary" id="clearFiltersBtn">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="toolsContainer" class="row g-3">
+                    <!-- Tools will be loaded here -->
+                </div>
+                
+                <div id="loadingIndicator" class="text-center my-4">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // Global variables
+        let allTools = [];
+        let filteredTools = [];
+
+        // Show loading state for specific button
+        function showLoading(buttonId, originalText = null) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...';
+                button.disabled = true;
+            }
+        }
+
+        // Hide loading state for specific button
+        function hideLoading(buttonId, originalText = null) {
+            const button = document.getElementById(buttonId);
+            if (button && originalText) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Show error message
+        function showError(message, duration = 5000) {
+            // Remove any existing error messages
+            const existingError = document.querySelector('.global-error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show fixed-top mt-2 global-error-message';
+            errorDiv.style.zIndex = '9999';
+            errorDiv.style.width = '90%';
+            errorDiv.style.left = '5%';
+            errorDiv.role = 'alert';
+            errorDiv.innerHTML = `
+                <strong>Error:</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            document.body.appendChild(errorDiv);
+            
+            // Auto-hide after specified duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, duration);
+            }
+        }
+
+        // Show success message
+        function showSuccess(message, duration = 3000) {
+            // Remove any existing success messages
+            const existingSuccess = document.querySelector('.global-success-message');
+            if (existingSuccess) {
+                existingSuccess.remove();
+            }
+            
+            // Create success message element
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success alert-dismissible fade show fixed-top mt-2 global-success-message';
+            successDiv.style.zIndex = '9999';
+            successDiv.style.width = '90%';
+            successDiv.style.left = '5%';
+            successDiv.role = 'alert';
+            successDiv.innerHTML = `
+                <strong>Success:</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            document.body.appendChild(successDiv);
+            
+            // Auto-hide after specified duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.remove();
+                    }
+                }, duration);
+            }
+        }
+
+        // Fetch and display all tools
+        async function loadAllTools() {
+            try {
+                // Show loading state
+                document.getElementById('loadingIndicator').style.display = 'block';
+                showLoading('refreshBtn');
+                
+                const response = await fetch('/api/tools?limit=100'); // Get all tools
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+                
+                allTools = data.tools;
+                filteredTools = [...allTools]; // Initialize filtered tools
+                
+                displayTools(filteredTools);
+                
+                // Hide loading indicator
+                document.getElementById('loadingIndicator').style.display = 'none';
+                showSuccess('Tools loaded successfully!');
+            } catch (error) {
+                console.error('Error loading tools:', error);
+                document.getElementById('loadingIndicator').innerHTML = '<div class="alert alert-danger">Error loading tools. Please try again later.</div>';
+                showError('Failed to load tools: ' + error.message);
+            } finally {
+                hideLoading('refreshBtn');
+            }
+        }
+        
+        // Display tools in grid
+        function displayTools(tools) {
+            const container = document.getElementById('toolsContainer');
+            
+            if (tools.length === 0) {
+                container.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">No tools found matching your criteria.</div></div>';
+                return;
+            }
+            
+            let toolsHtml = '';
+            
+            tools.forEach(tool => {
+                toolsHtml += `
+                <div class="col-md-3 col-sm-6 tool-item" data-category="${tool.category}" data-name="${tool.name.toLowerCase()}">
+                    <div class="card tool-card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-${tool.icon || 'tool'} fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="card-title">${tool.name}</h5>
+                            <p class="card-text flex-grow-1">${tool.description}</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tag"></i> ${tool.category}
+                                    </small>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="handleUseTool('${tool._id}', '${tool.name}', '${tool.url}')"
+                                        data-tool-id="${tool._id}"
+                                        data-tool-name="${tool.name}">
+                                        <i class="fas fa-external-link-alt me-1"></i> Use Tool
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            
+            container.innerHTML = toolsHtml;
+        }
+        
+        // Function to handle tool usage with proper tracking
+        async function handleUseTool(toolId, toolName, toolUrl) {
+            const button = document.querySelector(`[data-tool-id="${toolId}"]`);
+            if (!button) return;
+            
+            try {
+                // Temporarily change button to show processing
+                const originalText = button.innerHTML;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Opening...';
+                button.disabled = true;
+                
+                // Record tool usage
+                await recordToolUsage(toolId, toolName);
+                
+                // Open tool in new tab
+                window.open(toolUrl, '_blank');
+                
+                showSuccess(`Opening ${toolName} in new tab`);
+            } catch (error) {
+                console.error('Error using tool:', error);
+                showError(`Failed to use tool: ${error.message}`);
+            } finally {
+                // Restore button after a delay to show success feedback
+                setTimeout(() => {
+                    const restoreButton = document.querySelector(`[data-tool-id="${toolId}"]`);
+                    if (restoreButton) {
+                        restoreButton.innerHTML = '<i class="fas fa-external-link-alt me-1"></i> Use Tool';
+                        restoreButton.disabled = false;
+                    }
+                }, 1000);
+            }
+        }
+
+        // Function to record tool usage
+        async function recordToolUsage(toolId, toolName) {
+            try {
+                const response = await fetch(`/api/tools/record-usage/${toolId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ip: getClientIP(),
+                        userAgent: navigator.userAgent,
+                        toolName: toolName
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Error recording tool usage:', response.statusText);
+                    throw new Error(response.statusText);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error recording tool usage:', error);
+                throw error;
+            }
+        }
+
+        // Helper function to get client IP (this is a simplified version)
+        function getClientIP() {
+            // In a real implementation, this would use a service to get the actual IP
+            return 'unknown';
+        }
+
+        // Filter tools by category
+        function filterToolsByCategory() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            if (categoryFilter === '') {
+                filteredTools = [...allTools];
+            } else {
+                filteredTools = allTools.filter(tool => tool.category === categoryFilter);
+            }
+            
+            // Apply search filter if present
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredTools = filteredTools.filter(tool => 
+                    tool.name.toLowerCase().includes(searchTerm) || 
+                    tool.description.toLowerCase().includes(searchTerm) ||
+                    tool.category.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Apply sorting
+            applySorting();
+        }
+        
+        // Search tools
+        function searchTools() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                // If search is empty, apply only category filter
+                if (document.getElementById('categoryFilter').value === '') {
+                    filteredTools = [...allTools];
+                } else {
+                    filteredTools = allTools.filter(tool => 
+                        tool.category === document.getElementById('categoryFilter').value
+                    );
+                }
+            } else {
+                // If search term exists, filter by all criteria
+                let tempFiltered = allTools;
+                
+                // Apply category filter first
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                if (categoryFilter) {
+                    tempFiltered = tempFiltered.filter(tool => 
+                        tool.category === categoryFilter
+                    );
+                }
+                
+                // Then apply search filter
+                filteredTools = tempFiltered.filter(tool => 
+                    tool.name.toLowerCase().includes(searchTerm) || 
+                    tool.description.toLowerCase().includes(searchTerm) ||
+                    tool.category.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Apply sorting
+            applySorting();
+        }
+
+        // Apply sorting to filtered tools
+        function applySorting() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            switch(sortBy) {
+                case 'popularity':
+                    filteredTools.sort((a, b) => b.popularity - a.popularity);
+                    break;
+                case 'name':
+                    filteredTools.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'name-desc':
+                    filteredTools.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+            }
+            
+            displayTools(filteredTools);
+        }
+        
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('sortBy').value = 'popularity';
+            
+            filteredTools = [...allTools];
+            applySorting();
+            showSuccess('Filters cleared');
+        }
+        
+        // Perform search
+        async function performSearch(event) {
+            event.preventDefault();
+            searchTools();
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllTools();
+            
+            // Add event listeners
+            document.getElementById('categoryFilter').addEventListener('change', function() {
+                filterToolsByCategory();
+            });
+            
+            document.getElementById('searchInput').addEventListener('input', function() {
+                searchTools();
+            });
+            
+            document.getElementById('sortBy').addEventListener('change', function() {
+                applySorting();
+            });
+            
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                loadAllTools();
+            });
+            
+            document.getElementById('clearFiltersBtn').addEventListener('click', function() {
+                clearFilters();
+            });
+            
+            // Add event listener for search form submission
+            document.getElementById('searchButton').addEventListener('click', function() {
+                performSearch({ preventDefault: function() {} });
+            });
+        });
+        
+        // Expose functions globally
+        window.handleUseTool = handleUseTool;
+        window.recordToolUsage = recordToolUsage;
+        window.getClientIP = getClientIP;
+        window.performSearch = performSearch;
+    </script>
+</body>
+</html>

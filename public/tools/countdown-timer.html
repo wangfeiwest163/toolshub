@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .display {
+            font-family: 'Courier New', monospace;
+            font-size: 3rem;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .display.running {
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+        
+        .display.paused {
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+        }
+        
+        .display.timer-mode {
+            background-color: #2c3e50;
+        }
+        
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+        }
+        
+        .control-group {
+            margin: 10px 0;
+        }
+        
+        .time-input {
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 10px;
+        }
+        
+        .timer-progress {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+            background-color: #e9ecef;
+        }
+        
+        .timer-progress-bar {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .time-value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .time-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .date-input {
+            max-width: 300px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+    </style>
+</head>
+<body data-tool-id="9" data-tool-name="countdown-timer">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Countdown Timer</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Countdown Timer</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">A flexible countdown timer for events, deadlines, and time-sensitive tasks.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="text-center mb-4">
+                                <div id="display" class="display bg-dark text-light p-4 rounded timer-mode">
+                                    <div class="d-flex justify-content-center gap-4">
+                                        <div class="time-unit">
+                                            <div id="daysDisplay" class="time-value">00</div>
+                                            <div class="time-label">DAYS</div>
+                                        </div>
+                                        <div class="time-unit">
+                                            <div id="hoursDisplay" class="time-value">00</div>
+                                            <div class="time-label">HOURS</div>
+                                        </div>
+                                        <div class="time-unit">
+                                            <div id="minutesDisplay" class="time-value">00</div>
+                                            <div class="time-label">MINUTES</div>
+                                        </div>
+                                        <div class="time-unit">
+                                            <div id="secondsDisplay" class="time-value">00</div>
+                                            <div class="time-label">SECONDS</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="progressContainer" class="timer-progress">
+                                    <div id="progressBar" class="timer-progress-bar"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-center gap-2 mb-4">
+                                <button class="btn btn-success btn-lg" id="startBtn">
+                                    <i class="fas fa-play"></i> Start
+                                </button>
+                                <button class="btn btn-warning btn-lg" id="pauseBtn">
+                                    <i class="fas fa-pause"></i> Pause
+                                </button>
+                                <button class="btn btn-danger btn-lg" id="resetBtn">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
+                            
+                            <div id="timerControls" class="timer-controls p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="control-group">
+                                            <label for="targetDate" class="form-label">Target Date & Time</label>
+                                            <input type="datetime-local" class="form-control" id="targetDate">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="control-group">
+                                            <label for="eventName" class="form-label">Event Name</label>
+                                            <input type="text" class="form-control" id="eventName" placeholder="e.g., My Birthday, Project Deadline">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label">Alarm Sound</label>
+                                    <select class="form-select" id="alarmSound">
+                                        <option value="bell">Bell</option>
+                                        <option value="beep">Beep</option>
+                                        <option value="digital">Digital</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Set your target date and time using the datetime picker</li>
+                            <li>Add an optional event name to identify your countdown</li>
+                            <li>Click "Start" to begin the countdown</li>
+                            <li>Click "Pause" to temporarily stop the timer</li>
+                            <li>Click "Reset" to clear the timer</li>
+                            <li>Timer will alert when countdown reaches zero</li>
+                            <li>Press SPACEBAR to start/pause the timer</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/timer" class="list-group-item list-group-item-action">
+                            <i class="fas fa-stopwatch me-2"></i> Timer & Stopwatch
+                        </a>
+                        <a href="/tools/alarm-clock" class="list-group-item list-group-item-action">
+                            <i class="fas fa-bell me-2"></i> Alarm Clock
+                        </a>
+                        <a href="/tools/time-zone-converter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-globe-americas me-2"></i> Time Zone Converter
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Date & time selection</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Days, hours, minutes, seconds</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Progress visualization</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Customizable alarms</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Event naming</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Keyboard shortcuts</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Responsive design</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Shortcuts</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><kbd>SPACE</kbd> - Start/Pause</li>
+                            <li><kbd>R</kbd> - Reset</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Countdown Timer functionality
+        class CountdownTimer {
+            constructor() {
+                this.running = false;
+                this.targetTime = null;
+                this.timerInterval = null;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.setupKeyboardShortcuts();
+                
+                // Set default target date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(12, 0, 0, 0); // Set to noon
+                document.getElementById('targetDate').value = tomorrow.toISOString().slice(0, 16);
+            }
+            
+            initializeElements() {
+                this.display = document.getElementById('display');
+                this.daysDisplay = document.getElementById('daysDisplay');
+                this.hoursDisplay = document.getElementById('hoursDisplay');
+                this.minutesDisplay = document.getElementById('minutesDisplay');
+                this.secondsDisplay = document.getElementById('secondsDisplay');
+                this.progressContainer = document.getElementById('progressContainer');
+                this.progressBar = document.getElementById('progressBar');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.targetDateInput = document.getElementById('targetDate');
+                this.eventNameInput = document.getElementById('eventName');
+                this.alarmSoundSelect = document.getElementById('alarmSound');
+            }
+            
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+            }
+            
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Prevent keyboard shortcuts when focusing on inputs
+                    if (document.activeElement.tagName === 'INPUT') return;
+                    
+                    switch(e.key) {
+                        case ' ':
+                            e.preventDefault();
+                            if (this.running) this.pause();
+                            else this.start();
+                            break;
+                        case 'r':
+                        case 'R':
+                            this.reset();
+                            break;
+                    }
+                });
+            }
+            
+            start() {
+                const targetDateString = this.targetDateInput.value;
+                if (!targetDateString) {
+                    alert('Please set a target date and time');
+                    return;
+                }
+                
+                this.targetTime = new Date(targetDateString).getTime();
+                if (isNaN(this.targetTime)) {
+                    alert('Invalid date/time format');
+                    return;
+                }
+                
+                if (this.running) return;
+                
+                this.running = true;
+                this.display.classList.add('running');
+                this.display.classList.remove('paused');
+                
+                this.timerInterval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = this.targetTime - now;
+                    
+                    if (distance <= 0) {
+                        this.handleTimerCompletion();
+                    } else {
+                        // Calculate days, hours, minutes, seconds
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        
+                        // Update display
+                        this.daysDisplay.textContent = String(days).padStart(2, '0');
+                        this.hoursDisplay.textContent = String(hours).padStart(2, '0');
+                        this.minutesDisplay.textContent = String(minutes).padStart(2, '0');
+                        this.secondsDisplay.textContent = String(seconds).padStart(2, '0');
+                        
+                        // Update progress bar
+                        const totalTime = this.targetTime - new Date(this.targetDateInput.value.replace('T', ' ').replace(/-/g, '/')).getTime() + (new Date().getTime() - new Date(this.targetDateInput.value.replace('T', ' ').replace(/-/g, '/')).getTime());
+                        const elapsed = totalTime - distance;
+                        const progress = (elapsed / totalTime) * 100;
+                        this.progressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+                    }
+                }, 1000); // Update every second
+            }
+            
+            pause() {
+                if (!this.running) return;
+                
+                this.running = false;
+                clearInterval(this.timerInterval);
+                
+                this.display.classList.remove('running');
+                this.display.classList.add('paused');
+            }
+            
+            reset() {
+                this.running = false;
+                clearInterval(this.timerInterval);
+                
+                this.display.classList.remove('running', 'paused');
+                
+                // Reset to default values
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(12, 0, 0, 0);
+                document.getElementById('targetDate').value = tomorrow.toISOString().slice(0, 16);
+                
+                this.daysDisplay.textContent = '00';
+                this.hoursDisplay.textContent = '00';
+                this.minutesDisplay.textContent = '00';
+                this.secondsDisplay.textContent = '00';
+                this.progressBar.style.width = '0%';
+                
+                this.targetTime = null;
+            }
+            
+            handleTimerCompletion() {
+                this.reset();
+                
+                // Play alarm sound
+                this.playAlarm();
+                
+                // Show notification
+                const eventName = this.eventNameInput.value || 'Countdown Timer';
+                this.showNotification('Countdown Complete!', `${eventName} has arrived!`);
+            }
+            
+            playAlarm() {
+                // Get selected alarm sound
+                const soundType = this.alarmSoundSelect.value;
+                
+                // Create audio context for simple tones
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // Different sounds for different types
+                    if (soundType === 'bell') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 1);
+                    } else if (soundType === 'beep') {
+                        oscillator.type = 'square';
+                        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.5);
+                    } else { // digital
+                        oscillator.type = 'sawtooth';
+                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }
+                } catch (e) {
+                    console.log('Could not play alarm sound:', e);
+                    // Fallback to alert if audio fails
+                    alert('Countdown finished!');
+                }
+            }
+            
+            showNotification(title, message) {
+                // Try to use Notification API if available
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(title, { body: message });
+                } else if ('Notification' in window && Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(title, { body: message });
+                        } else {
+                            // Fallback to alert
+                            alert(message);
+                        }
+                    });
+                } else {
+                    // Fallback to alert
+                    alert(message);
+                }
+            }
+        }
+        
+        // Initialize the countdown timer when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const countdownTimer = new CountdownTimer();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>

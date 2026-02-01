@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Test</title>
+</head>
+<body>
+    <h1>QR Code Test Page</h1>
+    <div id="qrcode"></div>
+    <script src="./js/lib/qrcode.min.js"></script>
+    <script>
+        // Test if QR code library loads properly
+        console.log("Testing QR code library...");
+        
+        if (typeof QRCode !== 'undefined') {
+            console.log("QRCode library loaded successfully");
+            
+            // Try to create a simple QR code
+            new QRCode(document.getElementById("qrcode"), {
+                text: "Hello World!",
+                width: 128,
+                height: 128,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            console.log("QR code created successfully");
+        } else {
+            console.log("ERROR: QRCode library not found");
+        }
+    </script>
+</body>
+</html>

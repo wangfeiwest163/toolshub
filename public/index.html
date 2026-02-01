@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolsHub - Comprehensive Online Tools Collection</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="loadHome()">Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Categories</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('Utility Tools')">Utility Tools</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('AI Tools')">AI Tools</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('Online Calculators')">Calculators</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('Text Tools')">Text Tools</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('Image Tools')">Image Tools</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('Developer Tools')">Developer Tools</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="loadCategory('Converter Tools')">Converter Tools</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="loadFavorites()">Favorites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="loadAnalytics()">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="performSearch(event)">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Visitor Counter -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h5><i class="fas fa-users"></i> Visitors: <span id="visitorCount">0</span></h5>
+            </div>
+        </div>
+
+        <!-- Recent Tools Section -->
+        <div class="mb-4">
+            <h3>Recently Used Tools</h3>
+            <div id="recentToolsContainer" class="row g-3">
+                <!-- Recent tools will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Categories Section -->
+        <div class="mb-4">
+            <h3>Popular Categories</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card category-card" onclick="loadCategory('Utility Tools')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-wrench fa-2x text-primary mb-2"></i>
+                            <h5>Utility Tools</h5>
+                            <p class="text-muted">Essential utilities for everyday tasks</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card category-card" onclick="loadCategory('AI Tools')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-brain fa-2x text-success mb-2"></i>
+                            <h5>AI Tools</h5>
+                            <p class="text-muted">Artificial intelligence powered tools</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card category-card" onclick="loadCategory('Online Calculators')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calculator fa-2x text-warning mb-2"></i>
+                            <h5>Calculators</h5>
+                            <p class="text-muted">Mathematical and scientific calculators</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Grid -->
+        <div id="toolsContainer" class="row g-3">
+            <!-- Tools will be loaded here -->
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="text-center my-4 d-none">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

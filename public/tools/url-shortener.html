@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener | ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+</head>
+<body data-tool-id="5" data-tool-name="url-shortener">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">URL Shortener</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>URL Shortener</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Shorten long URLs to make them easier to share and track.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="mb-3">
+                                <label for="longUrl" class="form-label">Enter Long URL</label>
+                                <input type="url" class="form-control" id="longUrl" placeholder="https://www.example.com/very-long-url-with-many-parameters">
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-primary" type="button" id="shortenBtn">
+                                    <i class="fas fa-compress-alt"></i> Shorten URL
+                                </button>
+                            </div>
+                            
+                            <div id="errorContainer" class="mb-3"></div>
+                            
+                            <div class="result-container mt-3" id="resultContainer" style="display: none;">
+                                <h5>Shortened URL:</h5>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="shortUrl" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" id="copyUrl">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="#" id="previewLink" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-external-link-alt"></i> Preview
+                                    </a>
+                                    <a href="#" id="statsLink" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-chart-bar"></i> View Stats
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> Your shortened URLs will remain active indefinitely and you can track their usage statistics.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>Paste your long URL into the input field</li>
+                            <li>Click "Shorten URL" to generate a shortened link</li>
+                            <li>Copy the shortened URL and share it anywhere</li>
+                            <li>Track clicks and statistics for your links</li>
+                        </ol>
+                        <p class="mt-3">Our URL shortener is completely free to use with no limitations on the number of links you can create.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/qr-generator" class="list-group-item list-group-item-action">
+                            <i class="fas fa-qrcode me-2"></i> QR Code Generator
+                        </a>
+                        <a href="/tools/link-validator" class="list-group-item list-group-item-action">
+                            <i class="fas fa-link me-2"></i> Link Validator
+                        </a>
+                        <a href="/tools/url-analyzer" class="list-group-item list-group-item-action">
+                            <i class="fas fa-search me-2"></i> URL Analyzer
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Benefits</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Cleaner, shorter links</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Track click statistics</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Custom branded domains</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Secure and reliable</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/url-shortener.js"></script>
+    <script>
+        // Initialize the page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

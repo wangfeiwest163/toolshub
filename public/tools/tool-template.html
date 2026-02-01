@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Template | ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault();">
+                    <input class="form-control me-2" type="search" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#" id="categoryBreadcrumb">Category</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" id="toolNameBreadcrumb">Tool Name</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 id="toolTitle">Tool Title</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" id="toolDescription">Tool description will appear here.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <!-- Tool-specific interface will be loaded here -->
+                            <div class="alert alert-info">
+                                This is a template for tool interfaces. Specific functionality would be implemented for each tool.
+                            </div>
+                            
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="Enter input for the tool...">
+                                <button class="btn btn-primary" type="button" id="executeToolBtn">Execute</button>
+                            </div>
+                            
+                            <div class="result-container mt-3">
+                                <h5>Result:</h5>
+                                <div class="border rounded p-3 bg-light" id="toolResult">
+                                    Result will appear here...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>About this tool</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>This tool is part of our comprehensive suite of online utilities designed to make your digital life easier. Our tools are free to use, fast, and secure.</p>
+                        <p>Share this tool with others who might find it useful!</p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm"><i class="fab fa-facebook-f"></i> Share</button>
+                            <button class="btn btn-outline-info btn-sm"><i class="fab fa-twitter"></i> Tweet</button>
+                            <button class="btn btn-outline-success btn-sm"><i class="fas fa-link"></i> Copy Link</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush" id="relatedTools">
+                        <!-- Related tools will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-user"></i> Used by thousands</li>
+                            <li><i class="fas fa-bolt"></i> Instant results</li>
+                            <li><i class="fas fa-shield-alt"></i> Secure & private</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // Get tool ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const toolId = urlParams.get('id') || window.location.pathname.split('/').pop();
+        
+        // In a real implementation, we would fetch tool details based on the ID
+        // For this demo, we'll simulate loading tool details
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate loading tool details
+            setTimeout(() => {
+                document.getElementById('toolTitle').textContent = 'Demo Tool';
+                document.getElementById('toolDescription').textContent = 'This is a demonstration of how a tool page would look. In a full implementation, this would contain the actual tool interface.';
+                document.getElementById('toolNameBreadcrumb').textContent = 'Demo Tool';
+                document.getElementById('categoryBreadcrumb').textContent = 'Utility Tools';
+                
+                // Populate related tools
+                const relatedToolsDiv = document.getElementById('relatedTools');
+                const relatedTools = [
+                    {name: "Similar Tool 1", url: "#"},
+                    {name: "Similar Tool 2", url: "#"},
+                    {name: "Similar Tool 3", url: "#"}
+                ];
+                
+                relatedTools.forEach(tool => {
+                    const a = document.createElement('a');
+                    a.className = 'list-group-item list-group-item-action';
+                    a.href = tool.url;
+                    a.textContent = tool.name;
+                    relatedToolsDiv.appendChild(a);
+                });
+            }, 500);
+            
+            // Handle execute button
+            document.getElementById('executeToolBtn').addEventListener('click', function() {
+                document.getElementById('toolResult').textContent = 'Processing... In a real implementation, this would show actual tool results.';
+            });
+        });
+    </script>
+</body>
+</html>

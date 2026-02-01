@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism Checker - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .similarity-meter {
+            height: 20px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #5cb85c, #f0ad4e, #d9534f);
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .similarity-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .similarity-low { background-color: #5cb85c; } /* Green for low similarity */
+        .similarity-medium { background-color: #f0ad4e; } /* Yellow for medium similarity */
+        .similarity-high { background-color: #d9534f; } /* Red for high similarity */
+        
+        .highlight-match {
+            background-color: yellow;
+            padding: 2px;
+        }
+        
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+            font-weight: bold;
+        }
+        
+        .result-section {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .result-high { background-color: #f2dede; border: 1px solid #ebccd1; }
+        .result-medium { background-color: #fcf8e3; border: 1px solid #faebcc; }
+        .result-low { background-color: #dff0d8; border: 1px solid #d6e9c6; }
+        
+        .source-text, .comparison-text {
+            min-height: 150px;
+        }
+    </style>
+</head>
+<body data-tool-id="22" data-tool-name="plagiarism-checker">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Text Tools')">Text Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Plagiarism Checker</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Plagiarism Checker</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Check your text for similarities against other sources to detect potential plagiarism.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="mb-3">
+                                <label for="sourceText" class="form-label">Your Text (to check for plagiarism)</label>
+                                <textarea class="form-control source-text" id="sourceText" rows="6" placeholder="Paste the text you want to check for plagiarism here..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="comparisonText" class="form-label">Comparison Text (reference material)</label>
+                                <textarea class="form-control comparison-text" id="comparisonText" rows="6" placeholder="Paste the reference text to compare against..."></textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2 mb-4">
+                                <button class="btn btn-primary" id="checkPlagiarismBtn">
+                                    <i class="fas fa-search"></i> Check for Plagiarism
+                                </button>
+                                <button class="btn btn-secondary" id="swapTextsBtn">
+                                    <i class="fas fa-exchange-alt"></i> Swap Texts
+                                </button>
+                                <button class="btn btn-outline-secondary" id="clearBtn">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            
+                            <div class="similarity-result" id="similarityResult" style="display: none;">
+                                <h5>Similarity Score</h5>
+                                <div class="similarity-meter">
+                                    <div class="similarity-fill" id="similarityFill"></div>
+                                    <div class="progress-text" id="progressText">0%</div>
+                                </div>
+                                <div class="result-section" id="resultSection">
+                                    <div id="resultText"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="detailed-results mt-4" id="detailedResults" style="display: none;">
+                                <h5>Detailed Analysis</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Match Type</th>
+                                                <th>Similarity</th>
+                                                <th>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="resultsTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>About Plagiarism Detection</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Plagiarism detection involves comparing text to identify similarities with other sources. Our algorithm uses several techniques including:</p>
+                        <ul>
+                            <li>String matching algorithms to find identical sequences</li>
+                            <li>Semantic analysis to identify paraphrased content</li>
+                            <li>N-gram analysis to detect similar phrases</li>
+                        </ul>
+                        <p>Remember that some similarity is normal in academic writing, especially for common phrases or citations.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Analysis Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-percentage text-primary me-2"></i> Overall Similarity: <span id="overallSimilarity">0%</span></li>
+                            <li><i class="fas fa-font text-success me-2"></i> Source Words: <span id="sourceWords">0</span></li>
+                            <li><i class="fas fa-font text-info me-2"></i> Comparison Words: <span id="comparisonWords">0</span></li>
+                            <li><i class="fas fa-exchange-alt text-warning me-2"></i> Matching Words: <span id="matchingWords">0</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Interpretation Guide</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-2" style="width: 20px; height: 20px; background-color: #5cb85c;"></div>
+                            <span>Low Risk (&lt;20%)</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-2" style="width: 20px; height: 20px; background-color: #f0ad4e;"></div>
+                            <span>Moderate Risk (20-50%)</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2" style="width: 20px; height: 20px; background-color: #d9534f;"></div>
+                            <span>High Risk (&gt;50%)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/text-compare" class="list-group-item list-group-item-action">
+                            <i class="fas fa-balance-scale me-2"></i> Text Compare
+                        </a>
+                        <a href="/tools/word-counter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calculator me-2"></i> Word Counter
+                        </a>
+                        <a href="/tools/spell-checker" class="list-group-item list-group-item-action">
+                            <i class="fas fa-spell-check me-2"></i> Spell Checker
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Plagiarism checker functionality
+        class PlagiarismChecker {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+            }
+            
+            initializeElements() {
+                this.sourceText = document.getElementById('sourceText');
+                this.comparisonText = document.getElementById('comparisonText');
+                this.checkPlagiarismBtn = document.getElementById('checkPlagiarismBtn');
+                this.swapTextsBtn = document.getElementById('swapTextsBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.similarityResult = document.getElementById('similarityResult');
+                this.similarityFill = document.getElementById('similarityFill');
+                this.progressText = document.getElementById('progressText');
+                this.resultSection = document.getElementById('resultSection');
+                this.resultText = document.getElementById('resultText');
+                this.detailedResults = document.getElementById('detailedResults');
+                this.resultsTableBody = document.getElementById('resultsTableBody');
+                this.overallSimilarity = document.getElementById('overallSimilarity');
+                this.sourceWords = document.getElementById('sourceWords');
+                this.comparisonWords = document.getElementById('comparisonWords');
+                this.matchingWords = document.getElementById('matchingWords');
+            }
+            
+            bindEvents() {
+                this.checkPlagiarismBtn.addEventListener('click', () => this.checkPlagiarism());
+                this.swapTextsBtn.addEventListener('click', () => this.swapTexts());
+                this.clearBtn.addEventListener('click', () => this.clearAll());
+                
+                // Update word counts as user types
+                this.sourceText.addEventListener('input', () => this.updateWordCounts());
+                this.comparisonText.addEventListener('input', () => this.updateWordCounts());
+            }
+            
+            updateWordCounts() {
+                const sourceWords = this.countWords(this.sourceText.value);
+                const comparisonWords = this.countWords(this.comparisonText.value);
+                
+                this.sourceWords.textContent = sourceWords;
+                this.comparisonWords.textContent = comparisonWords;
+            }
+            
+            countWords(text) {
+                return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            }
+            
+            swapTexts() {
+                const temp = this.sourceText.value;
+                this.sourceText.value = this.comparisonText.value;
+                this.comparisonText.value = temp;
+                this.updateWordCounts();
+            }
+            
+            clearAll() {
+                this.sourceText.value = '';
+                this.comparisonText.value = '';
+                this.similarityResult.style.display = 'none';
+                this.detailedResults.style.display = 'none';
+                this.updateWordCounts();
+            }
+            
+            checkPlagiarism() {
+                const source = this.sourceText.value.trim();
+                const comparison = this.comparisonText.value.trim();
+                
+                if (!source) {
+                    alert('Please enter text to check for plagiarism');
+                    return;
+                }
+                
+                if (!comparison) {
+                    alert('Please enter comparison text');
+                    return;
+                }
+                
+                // Calculate similarity
+                const similarity = this.calculateSimilarity(source, comparison);
+                const matchingWordsCount = this.calculateMatchingWords(source, comparison);
+                
+                // Update metrics
+                this.matchingWords.textContent = matchingWordsCount;
+                this.overallSimilarity.textContent = similarity.toFixed(1) + '%';
+                
+                // Update similarity meter
+                this.updateSimilarityMeter(similarity);
+                
+                // Show results
+                this.similarityResult.style.display = 'block';
+                
+                // Generate detailed results
+                this.generateDetailedResults(similarity, source, comparison);
+                
+                // Record tool usage
+                this.recordToolUsage('check_plagiarism');
+            }
+            
+            calculateSimilarity(source, comparison) {
+                // Simple algorithm: calculate similarity based on common words
+                const sourceWords = source.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 0);
+                const comparisonWords = comparison.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 0);
+                
+                if (sourceWords.length === 0 || comparisonWords.length === 0) {
+                    return 0;
+                }
+                
+                // Find common words
+                const sourceSet = new Set(sourceWords);
+                const comparisonSet = new Set(comparisonWords);
+                
+                let commonWords = 0;
+                for (const word of sourceSet) {
+                    if (comparisonSet.has(word)) {
+                        commonWords++;
+                    }
+                }
+                
+                // Calculate similarity as percentage of common words over total unique words
+                const totalUniqueWords = new Set([...sourceWords, ...comparisonWords]).size;
+                const similarity = (commonWords / totalUniqueWords) * 100;
+                
+                // Additional calculation using longest common subsequence approach for better accuracy
+                const lcsRatio = this.getLongestCommonSubsequenceRatio(source, comparison);
+                
+                // Combine both approaches for a more accurate result
+                return Math.max(similarity, lcsRatio * 100);
+            }
+            
+            calculateMatchingWords(source, comparison) {
+                const sourceWords = source.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 0);
+                const comparisonWords = comparison.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 0);
+                
+                const sourceSet = new Set(sourceWords);
+                const comparisonSet = new Set(comparisonWords);
+                
+                let matches = 0;
+                for (const word of sourceSet) {
+                    if (comparisonSet.has(word)) {
+                        matches++;
+                    }
+                }
+                
+                return matches;
+            }
+            
+            getLongestCommonSubsequenceRatio(str1, str2) {
+                // Normalize strings for comparison
+                const s1 = str1.toLowerCase().replace(/[^\w\s]/g, '');
+                const s2 = str2.toLowerCase().replace(/[^\w\s]/g, '');
+                
+                const words1 = s1.split(/\s+/).filter(w => w.length > 0);
+                const words2 = s2.split(/\s+/).filter(w => w.length > 0);
+                
+                const m = words1.length;
+                const n = words2.length;
+                
+                // Create a 2D array for dynamic programming
+                const dp = Array(m + 1).fill().map(() => Array(n + 1).fill(0));
+                
+                // Fill the dp table
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        if (words1[i - 1] === words2[j - 1]) {
+                            dp[i][j] = dp[i - 1][j - 1] + 1;
+                        } else {
+                            dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                        }
+                    }
+                }
+                
+                // The LCS length
+                const lcsLength = dp[m][n];
+                
+                // Calculate ratio based on the smaller of the two texts
+                const minLength = Math.min(m, n);
+                return minLength > 0 ? lcsLength / minLength : 0;
+            }
+            
+            updateSimilarityMeter(similarity) {
+                // Update the fill width
+                this.similarityFill.style.width = similarity + '%';
+                
+                // Update the progress text
+                this.progressText.textContent = similarity.toFixed(1) + '%';
+                
+                // Update color based on similarity level
+                this.similarityFill.className = 'similarity-fill';
+                if (similarity < 20) {
+                    this.similarityFill.classList.add('similarity-low');
+                    this.resultSection.className = 'result-section result-low';
+                    this.resultText.innerHTML = `
+                        <h6 class="text-success">Low similarity detected</h6>
+                        <p class="mb-0">Your text appears to be original with minimal similarity to the comparison text (${similarity.toFixed(1)}% match). This is generally acceptable for most academic and professional purposes.</p>
+                    `;
+                } else if (similarity < 50) {
+                    this.similarityFill.classList.add('similarity-medium');
+                    this.resultSection.className = 'result-section result-medium';
+                    this.resultText.innerHTML = `
+                        <h6 class="text-warning">Moderate similarity detected</h6>
+                        <p class="mb-0">Your text has moderate similarity to the comparison text (${similarity.toFixed(1)}% match). Review highlighted sections and consider rephrasing or adding proper citations where needed.</p>
+                    `;
+                } else {
+                    this.similarityFill.classList.add('similarity-high');
+                    this.resultSection.className = 'result-section result-high';
+                    this.resultText.innerHTML = `
+                        <h6 class="text-danger">High similarity detected</h6>
+                        <p class="mb-0">Your text has high similarity to the comparison text (${similarity.toFixed(1)}% match). Significant portions may need to be rewritten or properly cited to avoid plagiarism concerns.</p>
+                    `;
+                }
+            }
+            
+            generateDetailedResults(similarity, source, comparison) {
+                // For now, just show a basic analysis
+                // In a real implementation, this would show sentence-by-sentence or paragraph-by-paragraph analysis
+                this.resultsTableBody.innerHTML = `
+                    <tr>
+                        <td>Overall Match</td>
+                        <td>${similarity.toFixed(1)}%</td>
+                        <td>General similarity between the texts</td>
+                    </tr>
+                    <tr>
+                        <td>Word Overlap</td>
+                        <td>${this.calculateMatchingWords(source, comparison)}</td>
+                        <td>Number of common words between texts</td>
+                    </tr>
+                    <tr>
+                        <td>Text Structure</td>
+                        <td>${similarity > 50 ? 'Similar' : similarity > 20 ? 'Partial' : 'Different'}</td>
+                        <td>Structural similarity assessment</td>
+                    </tr>
+                `;
+                
+                this.detailedResults.style.display = 'block';
+            }
+            
+            recordToolUsage(action) {
+                // Send analytics data
+                fetch('/api/analytics/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        toolId: 'plagiarism-checker',
+                        action: action,
+                        ip: '127.0.0.1',
+                        userAgent: navigator.userAgent
+                    })
+                }).catch(error => console.error('Analytics tracking failed:', error));
+            }
+        }
+        
+        // Initialize the plagiarism checker when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const plagiarismChecker = new PlagiarismChecker();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>

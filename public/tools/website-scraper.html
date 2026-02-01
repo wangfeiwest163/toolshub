@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Scraper | ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .scraper-result {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .loading {
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #0d6efd;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            height: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body data-tool-id="7" data-tool-name="website-scraper">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Website Scraper</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Website Scraper</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Scrape and analyze entire websites to extract data, content, and structure information.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="mb-3">
+                                <label for="targetSite" class="form-label">Enter Website URL</label>
+                                <input type="url" class="form-control" id="targetSite" placeholder="https://www.example.com">
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="maxPages" class="form-label">Max Pages to Crawl</label>
+                                    <input type="number" class="form-control" id="maxPages" value="10" min="1" max="100">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="delay" class="form-label">Delay Between Requests (ms)</label>
+                                    <input type="number" class="form-control" id="delay" value="1000" min="100" max="10000">
+                                </div>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="includeSubdomains">
+                                <label class="form-check-label" for="includeSubdomains">
+                                    Include subdomains
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-primary" type="button" id="scrapeBtn">
+                                    <i class="fas fa-download"></i> Scrape Website <span id="scrapeLoadingSpinner" class="loading"><div class="spinner"></div></span>
+                                </button>
+                            </div>
+                            
+                            <div class="progress-container" id="progressContainer">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                                         id="progressBar" style="width: 0%">0%</div>
+                                </div>
+                                <div id="progressText" class="mt-2 text-center">Initializing...</div>
+                            </div>
+                            
+                            <div id="errorContainer" class="mb-3"></div>
+                            
+                            <div id="resultsContainer" class="mt-4" style="display: none;">
+                                <h4>Scraping Results</h4>
+                                
+                                <div class="scraper-result">
+                                    <h5>Summary</h5>
+                                    <div id="summaryInfo"></div>
+                                </div>
+                                
+                                <div class="scraper-result">
+                                    <h5>Pages Scraped</h5>
+                                    <div id="pagesInfo"></div>
+                                </div>
+                                
+                                <div class="scraper-result">
+                                    <h5>Content Analysis</h5>
+                                    <div id="contentInfo"></div>
+                                </div>
+                                
+                                <div class="scraper-result">
+                                    <h5>Links Found</h5>
+                                    <div id="linksInfo"></div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 mt-3">
+                                    <button class="btn btn-success" type="button" id="exportBtn">
+                                        <i class="fas fa-file-export"></i> Export Results
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>Enter the URL of the website you want to scrape</li>
+                            <li>Set the maximum number of pages to crawl</li>
+                            <li>Adjust the delay between requests to be respectful to the server</li>
+                            <li>Click "Scrape Website" to start the scraping process</li>
+                            <li>Review the collected data and export if needed</li>
+                        </ol>
+                        <p class="mt-3">Please be respectful when scraping websites. Always check robots.txt and follow ethical scraping practices.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/url-analyzer" class="list-group-item list-group-item-action">
+                            <i class="fas fa-search me-2"></i> URL Analyzer
+                        </a>
+                        <a href="/tools/link-validator" class="list-group-item list-group-item-action">
+                            <i class="fas fa-link me-2"></i> Link Validator
+                        </a>
+                        <a href="/tools/url-shortener" class="list-group-item list-group-item-action">
+                            <i class="fas fa-compress-alt me-2"></i> URL Shortener
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Scraping Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Multi-page crawling</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Content extraction</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Link discovery</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Data export options</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Respectful scraping</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/website-scraper.js"></script>
+    <script>
+        // Initialize the page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Initialize scrape button functionality
+            document.getElementById('scrapeBtn').addEventListener('click', function() {
+                const targetSite = document.getElementById('targetSite').value.trim();
+                const maxPages = parseInt(document.getElementById('maxPages').value);
+                const delay = parseInt(document.getElementById('delay').value);
+                const includeSubdomains = document.getElementById('includeSubdomains').checked;
+                
+                if (!targetSite) {
+                    showError('Please enter a website URL to scrape');
+                    return;
+                }
+                
+                if (maxPages <= 0 || maxPages > 100) {
+                    showError('Max pages must be between 1 and 100');
+                    return;
+                }
+                
+                if (delay < 100 || delay > 10000) {
+                    showError('Delay must be between 100 and 10000 milliseconds');
+                    return;
+                }
+                
+                // Show loading spinner
+                document.getElementById('scrapeLoadingSpinner').classList.remove('loading');
+                document.getElementById('resultsContainer').style.display = 'none';
+                clearError();
+                
+                // Show progress container
+                document.getElementById('progressContainer').style.display = 'block';
+                
+                // Call the scrape function
+                scrapeWebsite(targetSite, maxPages, delay, includeSubdomains)
+                    .then(result => {
+                        displayResults(result);
+                    })
+                    .catch(error => {
+                        showError(error.message || 'An error occurred during scraping');
+                    })
+                    .finally(() => {
+                        document.getElementById('scrapeLoadingSpinner').classList.add('loading');
+                    });
+            });
+            
+            // Initialize export button
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                exportResults();
+            });
+        });
+        
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        }
+        
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+        
+        function updateProgress(percent, text) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = Math.round(percent) + '%';
+            progressText.textContent = text;
+        }
+        
+        function displayResults(results) {
+            document.getElementById('summaryInfo').innerHTML = `
+                <p><strong>Website:</strong> ${results.website}</p>
+                <p><strong>Pages Scraped:</strong> ${results.summary.pagesScraped}</p>
+                <p><strong>Total Links Found:</strong> ${results.summary.totalLinks}</p>
+                <p><strong>Unique Pages Discovered:</strong> ${results.summary.uniquePages}</p>
+                <p><strong>Scraping Duration:</strong> ${results.summary.duration}s</p>
+                <p><strong>Average Response Time:</strong> ${results.summary.avgResponseTime}ms</p>
+            `;
+            
+            // Display pages info
+            let pagesHtml = '<ul class="list-group">';
+            results.pages.forEach((page, index) => {
+                pagesHtml += `
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>${page.url}</strong><br>
+                                <small class="text-muted">Status: ${page.statusCode}, Size: ${page.size} bytes</small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">${page.responseTime}ms</small>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+            pagesHtml += '</ul>';
+            document.getElementById('pagesInfo').innerHTML = pagesHtml;
+            
+            // Display content info
+            document.getElementById('contentInfo').innerHTML = `
+                <p><strong>Total Words:</strong> ${results.content.wordCount}</p>
+                <p><strong>Total Images:</strong> ${results.content.images.length}</p>
+                <p><strong>Most Common Words:</strong> ${results.content.commonWords.slice(0, 10).join(', ')}</p>
+                <p><strong>External Domains:</strong> ${results.content.externalDomains.length > 0 ? results.content.externalDomains.join(', ') : 'None'}</p>
+            `;
+            
+            // Display links info
+            document.getElementById('linksInfo').innerHTML = `
+                <p><strong>Internal Links:</strong> ${results.links.internal.length}</p>
+                <p><strong>External Links:</strong> ${results.links.external.length}</p>
+                <p><strong>Broken Links:</strong> ${results.links.broken.length}</p>
+            `;
+            
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+        
+        function exportResults() {
+            // This would typically trigger a download of the results
+            alert('Export functionality would download the results in a structured format.');
+        }
+    </script>
+</body>
+</html>

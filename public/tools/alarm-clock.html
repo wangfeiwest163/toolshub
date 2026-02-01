@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm Clock - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .current-time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 4rem;
+            letter-spacing: 3px;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .alarm-time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+        }
+        
+        .control-group {
+            margin: 10px 0;
+        }
+        
+        .time-input {
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 10px;
+        }
+        
+        .alarm-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        
+        .alarm-item.active {
+            background-color: #e7f3ff;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alarm-item.ringing {
+            background-color: #ffebee;
+            border-left: 4px solid #dc3545;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        .alarm-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .ringing-animation {
+            animation: shake 0.5s infinite alternate;
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(-1px); }
+            100% { transform: translateX(1px); }
+        }
+    </style>
+</head>
+<body data-tool-id="10" data-tool-name="alarm-clock">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Alarm Clock</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Alarm Clock</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Set alarms for important events and wake up on time.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="current-time-display" id="currentTime">
+                                00:00:00
+                            </div>
+                            
+                            <div class="alarm-time-display" id="alarmTime">
+                                No Alarm Set
+                            </div>
+                            
+                            <div class="d-flex justify-content-center gap-2 mb-4">
+                                <button class="btn btn-success btn-lg" id="setAlarmBtn">
+                                    <i class="fas fa-bell"></i> Set Alarm
+                                </button>
+                                <button class="btn btn-warning btn-lg" id="cancelAlarmBtn">
+                                    <i class="fas fa-ban"></i> Cancel Alarm
+                                </button>
+                                <button class="btn btn-info btn-lg" id="snoozeBtn" disabled>
+                                    <i class="fas fa-clock"></i> Snooze
+                                </button>
+                            </div>
+                            
+                            <div id="alarmControls" class="alarm-controls p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="control-group">
+                                            <label for="alarmHour" class="form-label">Hour</label>
+                                            <input type="number" class="form-control time-input" id="alarmHour" min="0" max="23" value="8">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="control-group">
+                                            <label for="alarmMinute" class="form-label">Minute</label>
+                                            <input type="number" class="form-control time-input" id="alarmMinute" min="0" max="59" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label for="alarmLabel" class="form-label">Alarm Label</label>
+                                    <input type="text" class="form-control" id="alarmLabel" placeholder="e.g., Wake up, Meeting reminder">
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label">Alarm Sound</label>
+                                    <select class="form-select" id="alarmSound">
+                                        <option value="bell">Bell</option>
+                                        <option value="beep">Beep</option>
+                                        <option value="digital">Digital</option>
+                                        <option value="nature">Nature</option>
+                                        <option value="classical">Classical</option>
+                                    </select>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="repeatAlarm">
+                                        <label class="form-check-label" for="repeatAlarm">
+                                            Repeat Daily
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alarms-list mt-4">
+                                <h5>Saved Alarms</h5>
+                                <div id="savedAlarmsList"></div>
+                                <button class="btn btn-outline-secondary mt-2" id="addNewAlarmBtn">
+                                    <i class="fas fa-plus"></i> Add New Alarm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Set the hour and minute for your alarm</li>
+                            <li>Add an optional label to identify your alarm</li>
+                            <li>Select an alarm sound and choose to repeat daily</li>
+                            <li>Click "Set Alarm" to activate the alarm</li>
+                            <li>When the alarm rings, click "Snooze" or "Cancel Alarm"</li>
+                            <li>View and manage your saved alarms in the list</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/timer" class="list-group-item list-group-item-action">
+                            <i class="fas fa-stopwatch me-2"></i> Timer & Stopwatch
+                        </a>
+                        <a href="/tools/countdown-timer" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clock me-2"></i> Countdown Timer
+                        </a>
+                        <a href="/tools/time-zone-converter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-globe-americas me-2"></i> Time Zone Converter
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Real-time clock display</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Multiple alarms</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Snooze functionality</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Custom alarm labels</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Multiple alarm sounds</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Repeat options</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Visual notifications</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Alarm Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>You can set multiple alarms and manage them from the saved alarms section.</p>
+                        <p>Each alarm can have its own label, sound, and repeat settings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Alarm Clock functionality
+        class AlarmClock {
+            constructor() {
+                this.currentAlarms = [];
+                this.activeAlarm = null;
+                this.alarmInterval = null;
+                this.ringingInterval = null;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.updateCurrentTime();
+                this.startClock();
+                this.loadSavedAlarms();
+            }
+            
+            initializeElements() {
+                this.currentTimeDisplay = document.getElementById('currentTime');
+                this.alarmTimeDisplay = document.getElementById('alarmTime');
+                this.setAlarmBtn = document.getElementById('setAlarmBtn');
+                this.cancelAlarmBtn = document.getElementById('cancelAlarmBtn');
+                this.snoozeBtn = document.getElementById('snoozeBtn');
+                this.alarmHourInput = document.getElementById('alarmHour');
+                this.alarmMinuteInput = document.getElementById('alarmMinute');
+                this.alarmLabelInput = document.getElementById('alarmLabel');
+                this.alarmSoundSelect = document.getElementById('alarmSound');
+                this.repeatAlarmCheckbox = document.getElementById('repeatAlarm');
+                this.savedAlarmsList = document.getElementById('savedAlarmsList');
+                this.addNewAlarmBtn = document.getElementById('addNewAlarmBtn');
+            }
+            
+            bindEvents() {
+                this.setAlarmBtn.addEventListener('click', () => this.setAlarm());
+                this.cancelAlarmBtn.addEventListener('click', () => this.cancelAlarm());
+                this.snoozeBtn.addEventListener('click', () => this.snoozeAlarm());
+                this.addNewAlarmBtn.addEventListener('click', () => this.addNewAlarmForm());
+            }
+            
+            startClock() {
+                // Update current time every second
+                setInterval(() => {
+                    this.updateCurrentTime();
+                    this.checkAlarms();
+                }, 1000);
+            }
+            
+            updateCurrentTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                this.currentTimeDisplay.textContent = timeString;
+                
+                // Update date as well
+                const dateString = now.toLocaleDateString();
+                this.currentTimeDisplay.title = dateString;
+            }
+            
+            setAlarm() {
+                const hour = parseInt(this.alarmHourInput.value);
+                const minute = parseInt(this.alarmMinuteInput.value);
+                const label = this.alarmLabelInput.value || 'Alarm';
+                const sound = this.alarmSoundSelect.value;
+                const repeat = this.repeatAlarmCheckbox.checked;
+                
+                if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                    alert('Please enter a valid time (hour: 0-23, minute: 0-59)');
+                    return;
+                }
+                
+                const alarm = {
+                    hour: hour,
+                    minute: minute,
+                    label: label,
+                    sound: sound,
+                    repeat: repeat,
+                    id: Date.now()
+                };
+                
+                this.activeAlarm = alarm;
+                this.updateAlarmDisplay();
+                
+                // Save to local storage if repeat is checked
+                if (repeat) {
+                    this.saveAlarm(alarm);
+                }
+                
+                alert(`Alarm set for ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} - ${label}`);
+            }
+            
+            cancelAlarm() {
+                this.activeAlarm = null;
+                this.updateAlarmDisplay();
+                
+                // Stop any ringing
+                if (this.ringingInterval) {
+                    clearInterval(this.ringingInterval);
+                    this.ringingInterval = null;
+                }
+                
+                // Re-enable snooze button
+                this.snoozeBtn.disabled = true;
+                
+                alert('Alarm cancelled');
+            }
+            
+            snoozeAlarm() {
+                if (!this.activeAlarm) return;
+                
+                // Add 5 minutes to current time
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 5);
+                
+                this.activeAlarm.hour = now.getHours();
+                this.activeAlarm.minute = now.getMinutes();
+                
+                alert(`Alarm snoozed for 5 minutes. Next alarm at ${String(this.activeAlarm.hour).padStart(2, '0')}:${String(this.activeAlarm.minute).padStart(2, '0')}`);
+            }
+            
+            updateAlarmDisplay() {
+                if (this.activeAlarm) {
+                    this.alarmTimeDisplay.textContent = 
+                        `${String(this.activeAlarm.hour).padStart(2, '0')}:${String(this.activeAlarm.minute).padStart(2, '0')} - ${this.activeAlarm.label}`;
+                    this.alarmTimeDisplay.style.color = '#28a745';
+                    this.snoozeBtn.disabled = false;
+                } else {
+                    this.alarmTimeDisplay.textContent = 'No Alarm Set';
+                    this.alarmTimeDisplay.style.color = '#6c757d';
+                    this.snoozeBtn.disabled = true;
+                }
+            }
+            
+            checkAlarms() {
+                if (!this.activeAlarm) return;
+                
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                const currentSecond = now.getSeconds();
+                
+                // Check if it's time for the alarm
+                if (currentHour === this.activeAlarm.hour && 
+                    currentMinute === this.activeAlarm.minute && 
+                    currentSecond === 0) { // Only trigger once per minute
+                    this.triggerAlarm();
+                }
+            }
+            
+            triggerAlarm() {
+                // Show visual notification
+                this.alarmTimeDisplay.parentElement.classList.add('ringing-animation');
+                
+                // Play alarm sound
+                this.playAlarmSound(this.activeAlarm.sound);
+                
+                // Show notification
+                this.showNotification('Alarm!', `It's time: ${this.activeAlarm.label}`);
+                
+                // Disable snooze button during ringing
+                this.snoozeBtn.disabled = false;
+                
+                // Set up intervals for continuous ringing
+                this.ringingInterval = setInterval(() => {
+                    this.playAlarmSound(this.activeAlarm.sound);
+                }, 3000); // Ring every 3 seconds
+                
+                // After 1 minute, auto-stop if not acknowledged
+                setTimeout(() => {
+                    if (this.ringingInterval) {
+                        clearInterval(this.ringingInterval);
+                        this.ringingInterval = null;
+                        this.alarmTimeDisplay.parentElement.classList.remove('ringing-animation');
+                    }
+                }, 60000); // Stop after 1 minute
+            }
+            
+            playAlarmSound(soundType) {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // Different sounds for different types
+                    if (soundType === 'bell') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 1);
+                    } else if (soundType === 'beep') {
+                        oscillator.type = 'square';
+                        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.5);
+                    } else if (soundType === 'digital') {
+                        oscillator.type = 'sawtooth';
+                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    } else if (soundType === 'nature') {
+                        // Simulate nature sound with varying frequencies
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        oscillator.frequency.setValueAtTime(500, audioContext.currentTime + 0.1);
+                        oscillator.frequency.setValueAtTime(450, audioContext.currentTime + 0.2);
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    } else { // classical
+                        // Simple melody
+                        oscillator.type = 'triangle';
+                        oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C
+                        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.2); // E
+                        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.4); // G
+                        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.6);
+                    }
+                } catch (e) {
+                    console.log('Could not play alarm sound:', e);
+                    // Fallback to alert if audio fails
+                    alert(`Alarm: ${this.activeAlarm.label}`);
+                }
+            }
+            
+            showNotification(title, message) {
+                // Try to use Notification API if available
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(title, { body: message });
+                } else if ('Notification' in window && Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(title, { body: message });
+                        } else {
+                            // Fallback to alert
+                            alert(message);
+                        }
+                    });
+                } else {
+                    // Fallback to alert
+                    alert(message);
+                }
+            }
+            
+            saveAlarm(alarm) {
+                // Load existing alarms
+                let savedAlarms = JSON.parse(localStorage.getItem('alarms') || '[]');
+                
+                // Add new alarm
+                savedAlarms.push(alarm);
+                
+                // Save back to localStorage
+                localStorage.setItem('alarms', JSON.stringify(savedAlarms));
+                
+                // Update the display
+                this.loadSavedAlarms();
+            }
+            
+            loadSavedAlarms() {
+                const savedAlarms = JSON.parse(localStorage.getItem('alarms') || '[]');
+                this.currentAlarms = savedAlarms;
+                this.renderSavedAlarms();
+            }
+            
+            renderSavedAlarms() {
+                this.savedAlarmsList.innerHTML = '';
+                
+                if (this.currentAlarms.length === 0) {
+                    this.savedAlarmsList.innerHTML = '<div class="text-muted p-2">No saved alarms</div>';
+                    return;
+                }
+                
+                this.currentAlarms.forEach(alarm => {
+                    const alarmElement = document.createElement('div');
+                    alarmElement.className = 'alarm-item';
+                    alarmElement.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${String(alarm.hour).padStart(2, '0')}:${String(alarm.minute).padStart(2, '0')}</strong>
+                                <div class="text-muted">${alarm.label}</div>
+                            </div>
+                            <div class="alarm-actions">
+                                <button class="btn btn-sm btn-success set-alarm-btn" data-id="${alarm.id}">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-alarm-btn" data-id="${alarm.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                ${alarm.repeat ? 'Repeats daily' : 'One time'}
+                            </small>
+                        </div>
+                    `;
+                    
+                    this.savedAlarmsList.appendChild(alarmElement);
+                });
+                
+                // Add event listeners for the buttons
+                document.querySelectorAll('.set-alarm-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.setAlarmFromSaved(id);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-alarm-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.deleteAlarm(id);
+                    });
+                });
+            }
+            
+            setAlarmFromSaved(id) {
+                const alarm = this.currentAlarms.find(a => a.id === id);
+                if (alarm) {
+                    this.activeAlarm = {...alarm};
+                    this.alarmHourInput.value = alarm.hour;
+                    this.alarmMinuteInput.value = alarm.minute;
+                    this.alarmLabelInput.value = alarm.label;
+                    this.alarmSoundSelect.value = alarm.sound;
+                    this.repeatAlarmCheckbox.checked = alarm.repeat;
+                    this.updateAlarmDisplay();
+                    alert(`Alarm set from saved: ${alarm.label}`);
+                }
+            }
+            
+            deleteAlarm(id) {
+                if (confirm('Are you sure you want to delete this alarm?')) {
+                    this.currentAlarms = this.currentAlarms.filter(a => a.id !== id);
+                    
+                    // Remove from localStorage
+                    let savedAlarms = JSON.parse(localStorage.getItem('alarms') || '[]');
+                    savedAlarms = savedAlarms.filter(a => a.id !== id);
+                    localStorage.setItem('alarms', JSON.stringify(savedAlarms));
+                    
+                    this.loadSavedAlarms();
+                }
+            }
+            
+            addNewAlarmForm() {
+                // Create modal or expand form to add a new alarm
+                alert('Use the form above to set a new alarm and check "Repeat Daily" to save it permanently.');
+            }
+        }
+        
+        // Initialize the alarm clock when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const alarmClock = new AlarmClock();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+</head>
+<body data-tool-id="7" data-tool-name="notes">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Notes App</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Notes App</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">A simple note-taking app to jot down your ideas and thoughts.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="mb-3">
+                                <label for="noteTitle" class="form-label">Note Title</label>
+                                <input type="text" class="form-control" id="noteTitle" placeholder="Enter note title">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="noteContent" class="form-label">Note Content</label>
+                                <textarea class="form-control" id="noteContent" rows="6" placeholder="Write your note here..."></textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2 mb-4">
+                                <button class="btn btn-primary" id="saveNoteBtn">
+                                    <i class="fas fa-save"></i> Save Note
+                                </button>
+                                <button class="btn btn-success" id="newNoteBtn">
+                                    <i class="fas fa-plus"></i> New Note
+                                </button>
+                                <button class="btn btn-info" id="exportNotesBtn">
+                                    <i class="fas fa-file-export"></i> Export
+                                </button>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="notesList" class="form-label">Your Notes</label>
+                                <select class="form-select" id="notesList" size="8">
+                                    <option value="">No notes yet</option>
+                                </select>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-warning" id="editNoteBtn">
+                                    <i class="fas fa-edit"></i> Edit Selected
+                                </button>
+                                <button class="btn btn-danger" id="deleteNoteBtn">
+                                    <i class="fas fa-trash"></i> Delete Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>Enter a title and content for your note</li>
+                            <li>Click "Save Note" to store it</li>
+                            <li>Select a note from the list to view/edit it</li>
+                            <li>Use "Edit Selected" to modify existing notes</li>
+                            <li>Use "New Note" to create a blank note</li>
+                            <li>All notes are stored locally in your browser</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Notes Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-sticky-note text-primary me-2"></i> Total Notes: <span id="totalNotesCount">0</span></li>
+                            <li><i class="fas fa-font text-success me-2"></i> Total Words: <span id="totalWordsCount">0</span></li>
+                            <li><i class="fas fa-keyboard text-info me-2"></i> Total Characters: <span id="totalCharsCount">0</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/text-editor" class="list-group-item list-group-item-action">
+                            <i class="fas fa-pencil-alt me-2"></i> Text Editor
+                        </a>
+                        <a href="/tools/todo-list" class="list-group-item list-group-item-action">
+                            <i class="fas fa-tasks me-2"></i> To-Do List
+                        </a>
+                        <a href="/tools/password-manager" class="list-group-item list-group-item-action">
+                            <i class="fas fa-key me-2"></i> Password Manager
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Notes app functionality
+        class NotesApp {
+            constructor() {
+                this.notes = JSON.parse(localStorage.getItem('notes-app-notes')) || [];
+                this.currentNoteId = null;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.renderNotesList();
+                this.updateStats();
+            }
+            
+            initializeElements() {
+                this.noteTitle = document.getElementById('noteTitle');
+                this.noteContent = document.getElementById('noteContent');
+                this.notesList = document.getElementById('notesList');
+                this.saveNoteBtn = document.getElementById('saveNoteBtn');
+                this.newNoteBtn = document.getElementById('newNoteBtn');
+                this.editNoteBtn = document.getElementById('editNoteBtn');
+                this.deleteNoteBtn = document.getElementById('deleteNoteBtn');
+                this.exportNotesBtn = document.getElementById('exportNotesBtn');
+                this.totalNotesCount = document.getElementById('totalNotesCount');
+                this.totalWordsCount = document.getElementById('totalWordsCount');
+                this.totalCharsCount = document.getElementById('totalCharsCount');
+            }
+            
+            bindEvents() {
+                this.saveNoteBtn.addEventListener('click', () => this.saveNote());
+                this.newNoteBtn.addEventListener('click', () => this.newNote());
+                this.editNoteBtn.addEventListener('click', () => this.editNote());
+                this.deleteNoteBtn.addEventListener('click', () => this.deleteNote());
+                this.exportNotesBtn.addEventListener('click', () => this.exportNotes());
+                this.notesList.addEventListener('change', () => this.selectNote());
+            }
+            
+            saveNote() {
+                const title = this.noteTitle.value.trim();
+                const content = this.noteContent.value.trim();
+                
+                if (!title) {
+                    alert('Please enter a title for your note');
+                    return;
+                }
+                
+                if (this.currentNoteId) {
+                    // Update existing note
+                    const noteIndex = this.notes.findIndex(note => note.id === this.currentNoteId);
+                    if (noteIndex !== -1) {
+                        this.notes[noteIndex] = {
+                            ...this.notes[noteIndex],
+                            title,
+                            content,
+                            updatedAt: new Date()
+                        };
+                    }
+                } else {
+                    // Create new note
+                    const newNote = {
+                        id: Date.now().toString(),
+                        title,
+                        content,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    };
+                    this.notes.unshift(newNote);
+                }
+                
+                this.saveToLocalStorage();
+                this.renderNotesList();
+                this.updateStats();
+                this.clearForm();
+                
+                // Record tool usage
+                this.recordToolUsage('save_note');
+                
+                alert('Note saved successfully!');
+            }
+            
+            newNote() {
+                this.clearForm();
+                this.currentNoteId = null;
+            }
+            
+            editNote() {
+                if (!this.currentNoteId) {
+                    alert('Please select a note to edit');
+                    return;
+                }
+                
+                const note = this.notes.find(note => note.id === this.currentNoteId);
+                if (note) {
+                    this.noteTitle.value = note.title;
+                    this.noteContent.value = note.content;
+                }
+            }
+            
+            deleteNote() {
+                if (!this.currentNoteId) {
+                    alert('Please select a note to delete');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to delete this note?')) {
+                    this.notes = this.notes.filter(note => note.id !== this.currentNoteId);
+                    this.saveToLocalStorage();
+                    this.renderNotesList();
+                    this.updateStats();
+                    this.clearForm();
+                    this.currentNoteId = null;
+                    
+                    // Record tool usage
+                    this.recordToolUsage('delete_note');
+                    
+                    alert('Note deleted successfully!');
+                }
+            }
+            
+            exportNotes() {
+                if (this.notes.length === 0) {
+                    alert('No notes to export');
+                    return;
+                }
+                
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.notes, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "notes-export.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                
+                // Record tool usage
+                this.recordToolUsage('export_notes');
+            }
+            
+            selectNote() {
+                const selectedOption = this.notesList.options[this.notesList.selectedIndex];
+                if (selectedOption && selectedOption.value) {
+                    this.currentNoteId = selectedOption.value;
+                    this.editNote();
+                }
+            }
+            
+            renderNotesList() {
+                this.notesList.innerHTML = '';
+                
+                if (this.notes.length === 0) {
+                    const option = document.createElement('option');
+                    option.text = 'No notes yet';
+                    option.disabled = true;
+                    this.notesList.appendChild(option);
+                    return;
+                }
+                
+                this.notes.forEach(note => {
+                    const option = document.createElement('option');
+                    option.value = note.id;
+                    option.text = note.title;
+                    if (this.currentNoteId === note.id) {
+                        option.selected = true;
+                    }
+                    this.notesList.appendChild(option);
+                });
+            }
+            
+            updateStats() {
+                this.totalNotesCount.textContent = this.notes.length;
+                
+                const totalWords = this.notes.reduce((count, note) => {
+                    return count + note.content.split(/\s+/).filter(word => word.length > 0).length;
+                }, 0);
+                this.totalWordsCount.textContent = totalWords;
+                
+                const totalChars = this.notes.reduce((count, note) => {
+                    return count + note.content.length;
+                }, 0);
+                this.totalCharsCount.textContent = totalChars;
+            }
+            
+            clearForm() {
+                this.noteTitle.value = '';
+                this.noteContent.value = '';
+            }
+            
+            saveToLocalStorage() {
+                localStorage.setItem('notes-app-notes', JSON.stringify(this.notes));
+            }
+            
+            recordToolUsage(action) {
+                // Send analytics data
+                fetch('/api/analytics/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        toolId: 'notes',
+                        action: action,
+                        ip: '127.0.0.1',
+                        userAgent: navigator.userAgent
+                    })
+                }).catch(error => console.error('Analytics tracking failed:', error));
+            }
+        }
+        
+        // Initialize the notes app when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const notesApp = new NotesApp();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer & Stopwatch - ToolsHub</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all.min.css">
+    <style>
+        .display {
+            font-family: 'Courier New', monospace;
+            font-size: 3rem;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .display.running {
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+        
+        .display.paused {
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+        }
+        
+        .display.timer-mode {
+            background-color: #2c3e50;
+        }
+        
+        .display.stopwatch-mode {
+            background-color: #34495e;
+        }
+        
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+        }
+        
+        .control-group {
+            margin: 10px 0;
+        }
+        
+        .time-input {
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 10px;
+        }
+        
+        .lap-item {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timer-progress {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+            background-color: #e9ecef;
+        }
+        
+        .timer-progress-bar {
+            height: 100%;
+            background-color: #28a745;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .time-value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .time-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body data-tool-id="8" data-tool-name="timer">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> ToolsHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tools/all">All Tools</a>
+                    </li>
+                </ul>
+                <form class="d-flex" role="search" onsubmit="event.preventDefault(); performSearch(event);">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search tools..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/tools/all" onclick="event.preventDefault(); loadCategory('Utility Tools')">Utility Tools</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Timer & Stopwatch</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>Timer & Stopwatch</h3>
+                        <button class="btn btn-outline-primary" id="favoriteBtn">
+                            <i class="far fa-star"></i> Favorite
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">A versatile timer and stopwatch for all your timing needs.</p>
+                        
+                        <div class="tool-interface mt-4">
+                            <div class="d-flex justify-content-center mb-4">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-primary active" id="stopwatchTab">Stopwatch</button>
+                                    <button type="button" class="btn btn-outline-primary" id="timerTab">Timer</button>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mb-4">
+                                <div id="display" class="display bg-dark text-light p-4 rounded timer-mode">
+                                    <div class="d-flex justify-content-center gap-4">
+                                        <div class="time-unit">
+                                            <div id="hoursDisplay" class="time-value">00</div>
+                                            <div class="time-label">HOURS</div>
+                                        </div>
+                                        <div class="time-unit">
+                                            <div id="minutesDisplay" class="time-value">00</div>
+                                            <div class="time-label">MINUTES</div>
+                                        </div>
+                                        <div class="time-unit">
+                                            <div id="secondsDisplay" class="time-value">00</div>
+                                            <div class="time-label">SECONDS</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="progressContainer" class="timer-progress" style="display: none;">
+                                    <div id="progressBar" class="timer-progress-bar"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-center gap-2 mb-4">
+                                <button class="btn btn-success btn-lg" id="startBtn">
+                                    <i class="fas fa-play"></i> Start
+                                </button>
+                                <button class="btn btn-warning btn-lg" id="pauseBtn">
+                                    <i class="fas fa-pause"></i> Pause
+                                </button>
+                                <button class="btn btn-danger btn-lg" id="resetBtn">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                                <button class="btn btn-info btn-lg" id="lapBtn">
+                                    <i class="fas fa-flag"></i> Lap
+                                </button>
+                            </div>
+                            
+                            <div id="timerControls" class="timer-controls p-3" style="display: none; background-color: #f8f9fa; border-radius: 8px;">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="control-group">
+                                            <label for="hours" class="form-label">Hours</label>
+                                            <input type="number" class="form-control time-input" id="hours" min="0" max="99" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="control-group">
+                                            <label for="minutes" class="form-label">Minutes</label>
+                                            <input type="number" class="form-control time-input" id="minutes" min="0" max="59" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="control-group">
+                                            <label for="seconds" class="form-label">Seconds</label>
+                                            <input type="number" class="form-control time-input" id="seconds" min="0" max="59" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label">Alarm Sound</label>
+                                    <select class="form-select" id="alarmSound">
+                                        <option value="bell">Bell</option>
+                                        <option value="beep">Beep</option>
+                                        <option value="digital">Digital</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="laps-container mt-4">
+                                <h5>Laps/Times</h5>
+                                <div id="lapsList" class="laps-list"></div>
+                                <button class="btn btn-outline-secondary mt-2" id="clearLapsBtn">
+                                    <i class="fas fa-trash"></i> Clear Laps
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>How to Use</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Stopwatch:</h5>
+                        <ul>
+                            <li>Click "Start" to begin timing</li>
+                            <li>Click "Pause" to pause the stopwatch</li>
+                            <li>Click "Reset" to clear the time</li>
+                            <li>Click "Lap" to record lap times</li>
+                            <li>Press SPACEBAR to start/pause the timer</li>
+                        </ul>
+                        
+                        <h5>Timer:</h5>
+                        <ul>
+                            <li>Set hours, minutes, and seconds</li>
+                            <li>Click "Start" to begin countdown</li>
+                            <li>Timer will alert when complete</li>
+                            <li>Select alarm sound for notification</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Related Tools</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="/tools/countdown-timer" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clock me-2"></i> Countdown Timer
+                        </a>
+                        <a href="/tools/alarm-clock" class="list-group-item list-group-item-action">
+                            <i class="fas fa-bell me-2"></i> Alarm Clock
+                        </a>
+                        <a href="/tools/time-zone-converter" class="list-group-item list-group-item-action">
+                            <i class="fas fa-globe-americas me-2"></i> Time Zone Converter
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Accurate timing</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Lap time recording</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Dual mode (stopwatch & timer)</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Progress visualization</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Customizable alarms</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Keyboard shortcuts</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Responsive design</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Shortcuts</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><kbd>SPACE</kbd> - Start/Pause</li>
+                            <li><kbd>R</kbd> - Reset</li>
+                            <li><kbd>L</kbd> - Record Lap</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 ToolsHub - All rights reserved</p>
+    </footer>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Timer and Stopwatch functionality
+        class TimerStopwatch {
+            constructor() {
+                this.mode = 'stopwatch'; // 'stopwatch' or 'timer'
+                this.running = false;
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.timerInterval = null;
+                this.laps = [];
+                this.totalTime = 0; // Used for progress calculation in timer mode
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.setupKeyboardShortcuts();
+            }
+            
+            initializeElements() {
+                this.display = document.getElementById('display');
+                this.hoursDisplay = document.getElementById('hoursDisplay');
+                this.minutesDisplay = document.getElementById('minutesDisplay');
+                this.secondsDisplay = document.getElementById('secondsDisplay');
+                this.progressContainer = document.getElementById('progressContainer');
+                this.progressBar = document.getElementById('progressBar');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.lapBtn = document.getElementById('lapBtn');
+                this.clearLapsBtn = document.getElementById('clearLapsBtn');
+                this.stopwatchTab = document.getElementById('stopwatchTab');
+                this.timerTab = document.getElementById('timerTab');
+                this.timerControls = document.getElementById('timerControls');
+                this.lapsList = document.getElementById('lapsList');
+                this.hoursInput = document.getElementById('hours');
+                this.minutesInput = document.getElementById('minutes');
+                this.secondsInput = document.getElementById('seconds');
+                this.alarmSoundSelect = document.getElementById('alarmSound');
+            }
+            
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+                this.lapBtn.addEventListener('click', () => this.recordLap());
+                this.clearLapsBtn.addEventListener('click', () => this.clearLaps());
+                
+                this.stopwatchTab.addEventListener('click', () => this.switchToStopwatch());
+                this.timerTab.addEventListener('click', () => this.switchToTimer());
+                
+                // Initialize in stopwatch mode
+                this.switchToStopwatch();
+            }
+            
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Prevent keyboard shortcuts when focusing on inputs
+                    if (document.activeElement.tagName === 'INPUT') return;
+                    
+                    switch(e.key) {
+                        case ' ':
+                            e.preventDefault();
+                            if (this.running) this.pause();
+                            else this.start();
+                            break;
+                        case 'r':
+                        case 'R':
+                            this.reset();
+                            break;
+                        case 'l':
+                        case 'L':
+                            this.recordLap();
+                            break;
+                    }
+                });
+            }
+            
+            start() {
+                if (this.running) return;
+                
+                this.running = true;
+                this.startTime = Date.now() - this.elapsedTime;
+                
+                this.display.classList.add('running');
+                this.display.classList.remove('paused');
+                
+                this.timerInterval = setInterval(() => {
+                    if (this.mode === 'stopwatch') {
+                        this.elapsedTime = Date.now() - this.startTime;
+                        this.updateDisplay();
+                    } else if (this.mode === 'timer') {
+                        this.elapsedTime = Date.now() - this.startTime;
+                        const remaining = this.getTargetTime() - Math.floor(this.elapsedTime / 1000);
+                        
+                        if (remaining <= 0) {
+                            this.handleTimerCompletion();
+                        } else {
+                            this.updateDisplay(remaining);
+                            this.updateProgress();
+                        }
+                    }
+                }, 10); // Update every 10ms for smooth display
+            }
+            
+            pause() {
+                if (!this.running) return;
+                
+                this.running = false;
+                clearInterval(this.timerInterval);
+                
+                this.display.classList.remove('running');
+                this.display.classList.add('paused');
+            }
+            
+            reset() {
+                this.running = false;
+                clearInterval(this.timerInterval);
+                
+                this.display.classList.remove('running', 'paused');
+                
+                if (this.mode === 'stopwatch') {
+                    this.elapsedTime = 0;
+                    this.laps = [];
+                    this.updateDisplay();
+                    this.updateLaps();
+                } else {
+                    this.elapsedTime = 0;
+                    this.totalTime = this.getTargetTime();
+                    this.updateDisplay(this.totalTime);
+                    this.updateProgress();
+                }
+            }
+            
+            recordLap() {
+                if (this.mode !== 'stopwatch') return;
+                
+                const lapTime = this.elapsedTime;
+                this.laps.push(lapTime);
+                this.updateLaps();
+            }
+            
+            clearLaps() {
+                this.laps = [];
+                this.updateLaps();
+            }
+            
+            switchToStopwatch() {
+                this.mode = 'stopwatch';
+                this.stopwatchTab.classList.add('active');
+                this.timerTab.classList.remove('active');
+                this.timerControls.style.display = 'none';
+                this.progressContainer.style.display = 'none';
+                this.display.classList.remove('timer-mode');
+                this.display.classList.add('stopwatch-mode');
+                this.reset();
+            }
+            
+            switchToTimer() {
+                this.mode = 'timer';
+                this.timerTab.classList.add('active');
+                this.stopwatchTab.classList.remove('active');
+                this.timerControls.style.display = 'block';
+                this.progressContainer.style.display = 'block';
+                this.display.classList.remove('stopwatch-mode');
+                this.display.classList.add('timer-mode');
+                this.totalTime = this.getTargetTime();
+                this.reset();
+            }
+            
+            getTargetTime() {
+                const hours = parseInt(this.hoursInput.value) || 0;
+                const minutes = parseInt(this.minutesInput.value) || 0;
+                const seconds = parseInt(this.secondsInput.value) || 0;
+                return hours * 3600 + minutes * 60 + seconds;
+            }
+            
+            updateDisplay(time = null) {
+                let totalSeconds;
+                
+                if (this.mode === 'stopwatch') {
+                    totalSeconds = Math.floor(this.elapsedTime / 1000);
+                } else {
+                    totalSeconds = time !== null ? time : (this.getTargetTime() - Math.floor(this.elapsedTime / 1000));
+                    
+                    // For timer, ensure it doesn't go negative
+                    if (totalSeconds < 0) totalSeconds = 0;
+                }
+                
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                this.hoursDisplay.textContent = String(hours).padStart(2, '0');
+                this.minutesDisplay.textContent = String(minutes).padStart(2, '0');
+                this.secondsDisplay.textContent = String(seconds).padStart(2, '0');
+            }
+            
+            updateProgress() {
+                if (this.mode !== 'timer') return;
+                
+                const elapsed = Math.floor(this.elapsedTime / 1000);
+                const totalTime = this.getTargetTime();
+                
+                if (totalTime <= 0) {
+                    this.progressBar.style.width = '0%';
+                    return;
+                }
+                
+                const progress = ((totalTime - elapsed) / totalTime) * 100;
+                this.progressBar.style.width = Math.max(0, Math.min(100, progress)) + '%';
+            }
+            
+            updateLaps() {
+                this.lapsList.innerHTML = '';
+                
+                if (this.laps.length === 0) {
+                    this.lapsList.innerHTML = '<div class="text-muted p-2">No laps recorded yet</div>';
+                    return;
+                }
+                
+                // Show laps in reverse order (most recent first)
+                for (let i = this.laps.length - 1; i >= 0; i--) {
+                    const lapTime = this.laps[i];
+                    const lapSeconds = Math.floor(lapTime / 1000);
+                    const hours = Math.floor(lapSeconds / 3600);
+                    const minutes = Math.floor((lapSeconds % 3600) / 60);
+                    const seconds = lapSeconds % 60;
+                    
+                    const formattedLap = 
+                        String(hours).padStart(2, '0') + ':' +
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
+                    
+                    const lapItem = document.createElement('div');
+                    lapItem.className = 'lap-item d-flex justify-content-between p-2 border-bottom';
+                    lapItem.innerHTML = `
+                        <span>Lap ${i + 1}</span>
+                        <span>${formattedLap}</span>
+                    `;
+                    
+                    this.lapsList.appendChild(lapItem);
+                }
+            }
+            
+            handleTimerCompletion() {
+                this.reset();
+                this.updateDisplay(0);
+                
+                // Play alarm sound
+                this.playAlarm();
+                
+                // Show notification
+                this.showNotification('Timer Finished!', 'Your timer has completed.');
+            }
+            
+            playAlarm() {
+                // Get selected alarm sound
+                const soundType = this.alarmSoundSelect.value;
+                
+                // Create audio context for simple tones
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // Different sounds for different types
+                    if (soundType === 'bell') {
+                        oscillator.type = 'sine';
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 1);
+                    } else if (soundType === 'beep') {
+                        oscillator.type = 'square';
+                        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.5);
+                    } else { // digital
+                        oscillator.type = 'sawtooth';
+                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }
+                } catch (e) {
+                    console.log('Could not play alarm sound:', e);
+                    // Fallback to alert if audio fails
+                    alert('Timer finished!');
+                }
+            }
+            
+            showNotification(title, message) {
+                // Try to use Notification API if available
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(title, { body: message });
+                } else if ('Notification' in window && Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(title, { body: message });
+                        } else {
+                            // Fallback to alert
+                            alert(message);
+                        }
+                    });
+                } else {
+                    // Fallback to alert
+                    alert(message);
+                }
+            }
+        }
+        
+        // Initialize the timer/stopwatch when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const timerStopwatch = new TimerStopwatch();
+            
+            // Initialize favorite button functionality
+            document.getElementById('favoriteBtn').addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-warning');
+                    this.innerHTML = '<i class="fas fa-star text-warning"></i> Favorited';
+                } else {
+                    icon.classList.remove('fas', 'text-warning');
+                    icon.classList.add('far');
+                    this.innerHTML = '<i class="far fa-star"></i> Favorite';
+                }
+            });
+            
+            // Search functionality
+            window.performSearch = function(event) {
+                if (event) event.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value;
+                if (searchTerm) {
+                    window.location.href = `/tools/all?search=${encodeURIComponent(searchTerm)}`;
+                }
+            };
+            
+            window.loadCategory = function(category) {
+                window.location.href = `/tools/all?category=${encodeURIComponent(category)}`;
+            };
+        });
+    </script>
+</body>
+</html>
