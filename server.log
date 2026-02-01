@@ -1,0 +1,14 @@
+Server is running on port 3000
+A user connected
+A user connected
+MongoDB connection failed: connect ECONNREFUSED 127.0.0.1:27017
+Switching to fallback mode with in-memory storage
+Running in fallback mode with in-memory storage
+A user disconnected
+A user connected
+A user disconnected
+A user connected
+A user disconnected
+A user connected
+A user disconnected
+A user connected
