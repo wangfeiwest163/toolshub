@@ -1,22 +1,15 @@
 #!/bin/bash
+# Start the ToolsHub application
 
-# ToolsHub Startup Script
+# Navigate to the project directory
+cd /home/wangfei/.openclaw/workspace
 
-echo "Starting ToolsHub Application..."
-echo "=================================="
+# Install dependencies if not already installed
+npm install
 
-# Check if node is installed
-if ! [ -x "$(command -v node)" ]; then
-  echo "Error: Node.js is not installed." >&2
-  exit 1
-fi
+# Start the application in the background
+nohup npm start > app.log 2>&1 &
 
-# Check if MongoDB is accessible
-echo "Checking MongoDB connection..."
-if ! nc -z localhost 27017; then
-  echo "Warning: MongoDB is not running on localhost:27017"
-  echo "Make sure MongoDB is running before starting the application"
-fi
-
-echo "Starting server..."
-node server.js
+echo "ToolsHub application started successfully!"
+echo "Server is running on port 3000"
+echo "Access the application at: http://localhost:3000"
